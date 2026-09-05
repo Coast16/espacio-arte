@@ -1,0 +1,795 @@
+/* ═══════════════════════════════════════════════════════════
+   Espacio Arte — sistema visual
+   Regla única de color: la página es cal, tinta y línea.
+   TODO el color lo aportan las obras. No agregar acentos de marca.
+   ═══════════════════════════════════════════════════════════ */
+
+@font-face{
+  font-family:"Noah Head";
+  src:url("../assets/noah-head-light.otf") format("opentype");
+  font-weight:300;font-style:normal;font-display:swap;
+}
+
+:root{
+  /* La sala está encalada: el fondo es cal y la tinta es lo que se apoya
+     encima. Los bloques que van al revés llevan .invertido y redefinen
+     estos mismos tokens; ninguna regla de abajo sabe en cuál está. */
+  --fondo:#F4F2ED;
+  --realce:#FCFBF8;
+  --tinta:#101216;
+  --humo:#6E727A;
+  --linea:rgba(16,18,22,.16);
+  --linea-fuerte:rgba(16,18,22,.34);
+  --velo:244,242,237;          /* para los degradados sobre foto */
+
+  --f-display:"Noah Head","Instrument Sans",system-ui,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
+
+  --pad:clamp(20px,5vw,72px);
+  --barra-h:64px;
+
+  /* Movimiento: una sola curva de salida y dos duraciones.
+     Estaban repetidas a mano en media docena de lugares, con cuatro
+     duraciones distintas para el mismo tipo de gesto. */
+  --ease-salida:cubic-bezier(.16,1,.3,1);
+  --t-toque:.16s;   /* hover y press: arriba de 200 ms se siente lento */
+  --t-suave:.55s;   /* cambios de estado que no responden al dedo */
+}
+
+/* Un bloque al revés: tinta de fondo, cal encima. Se usa en el umbral,
+   en el archivo de muestras, en el pie y en el visor. */
+.invertido{
+  --fondo:#0A0B0D;
+  --realce:#14161A;
+  --tinta:#F2F0EB;
+  --humo:#8E9299;
+  --linea:rgba(242,240,235,.17);
+  --linea-fuerte:rgba(242,240,235,.36);
+  --velo:10,11,13;
+  background:var(--fondo);
+  color:var(--tinta);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  margin:0;
+  background:var(--fondo);
+  color:var(--tinta);
+  font-family:var(--f-body);
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+::selection{background:var(--tinta);color:var(--fondo)}
+
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--tinta);outline-offset:4px}
+
+.skip{
+  position:absolute;left:-9999px;top:8px;z-index:200;
+  background:var(--tinta);color:var(--fondo);padding:10px 16px;
+}
+.skip:focus{left:8px}
+
+/* ── tipografía ── */
+.titulo-xl,.titulo-l,.titulo-m{
+  font-family:var(--f-display);font-weight:300;
+  letter-spacing:-.018em;text-wrap:balance;margin:0;
+}
+.titulo-xl{font-size:clamp(56px,13vw,168px);line-height:.88}
+.titulo-l{font-size:clamp(30px,5.2vw,62px);line-height:1.04}
+.titulo-m{font-size:clamp(24px,3.4vw,40px);line-height:1.1}
+
+.eyebrow{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--humo);margin:0;
+}
+.parrafo{margin:0;max-width:56ch;color:var(--tinta);opacity:.92}
+
+/* máscaras de línea (revelado de texto) */
+.ml{display:block;overflow:hidden}
+.ln{display:block;will-change:transform}
+
+/* ── barra ── */
+.barra{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:var(--barra-h);
+  display:flex;align-items:center;gap:24px;
+  padding-inline:var(--pad);
+  /* casi opaca arriba y difuminada abajo: la barra lleva su propio piso, así
+     el logo nunca queda partido en el borde entre un bloque claro y uno oscuro */
+  background:linear-gradient(to bottom,rgba(var(--velo),.97) 0%,rgba(var(--velo),.95) 58%,rgba(var(--velo),0) 100%);
+  pointer-events:none;
+}
+.barra > *{pointer-events:auto}
+.barra-logo{display:flex;align-items:center;gap:11px}
+/* el isotipo se recorta por CSS del lockup horizontal: evita un archivo más */
+.isotipo{
+  display:block;width:33px;height:35px;overflow:hidden;flex:none;
+}
+.isotipo img{width:125px;max-width:none;height:auto}
+/* sobre un tramo oscuro la barra se da vuelta entera */
+.barra.en-oscuro{color:#F2F0EB;--velo:10,11,13}
+.barra.en-oscuro .isotipo img{filter:invert(1) brightness(1.12)}
+.barra.en-oscuro .barra-nav a{color:#8E9299}
+.barra.en-oscuro .barra-nav a:hover{color:#F2F0EB}
+.barra.en-oscuro .indice{color:#8E9299}
+.barra.en-oscuro .ruedo{border-color:rgba(242,240,235,.22)}
+.barra.en-oscuro .ruedo i{background:conic-gradient(#F2F0EB calc(var(--p,0)*1%),transparent 0)}
+.barra-marca{
+  font-family:var(--f-display);font-weight:300;
+  font-size:13px;line-height:1.06;letter-spacing:.02em;
+}
+.barra-nav{
+  margin-left:auto;display:flex;gap:22px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+}
+.barra-nav a{color:var(--humo);transition:color var(--t-toque) var(--ease-salida)}
+.barra-nav a:hover{color:var(--tinta)}
+
+/* progreso: la planta del redondel */
+.ruedo{
+  width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--linea);flex:none;position:relative;
+}
+.ruedo i{
+  position:absolute;inset:2px;border-radius:50%;display:block;
+  background:conic-gradient(var(--tinta) calc(var(--p,0)*1%),transparent 0);
+  mask:radial-gradient(circle,transparent 52%,#000 54%);
+  -webkit-mask:radial-gradient(circle,transparent 52%,#000 54%);
+}
+
+/* ═══════════ 01 · PORTADA ═══════════ */
+/* Dos tramos: el logo se arma (≈78vh) y después la cámara lo atraviesa
+   (≈107vh). Fue 320vh y sobraba: el vuelo terminaba antes que la sección y
+   quedaba pantalla en blanco hasta el bloque siguiente. Si volvés a tocar
+   esta altura, revisá el reparto de tramos en redondel.js: los dos tienen
+   que cerrar juntos. */
+.portada{height:285vh;position:relative}
+.portada-pin{
+  height:100vh;position:sticky;top:0;
+  display:grid;place-items:center;overflow:hidden;
+}
+#lienzo{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:block;opacity:0;transition:opacity 1.2s ease;
+}
+#lienzo.listo{opacity:1}
+.portada-poster{
+  position:absolute;top:50%;left:50%;width:190px;height:auto;
+  transform:translate(-50%,-58%);opacity:.85;
+}
+#lienzo.listo ~ .portada-poster{display:none}
+
+.sello{
+  position:absolute;top:50%;left:50%;
+  width:min(74vmin,560px);height:min(74vmin,560px);
+  transform:translate(-50%,-50%);
+  color:var(--humo);opacity:.5;pointer-events:none;
+}
+.sello text{
+  font-family:var(--f-mono);font-size:9.6px;letter-spacing:.26em;
+  fill:currentColor;text-transform:uppercase;
+}
+.sello-gira{transform-origin:50% 50%;animation:gira 52s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+
+.portada-texto{
+  position:relative;z-index:2;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  padding-inline:var(--pad);
+  mix-blend-mode:normal;
+}
+.portada-texto .eyebrow{font-size:10.5px}
+.portada-bajada{
+  margin:0;max-width:26ch;font-size:clamp(16px,2.1vw,20px);
+  color:var(--humo);line-height:1.45;
+}
+.pista{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  margin:0;font-family:var(--f-mono);font-size:10px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--humo);
+}
+.pista span{display:inline-block;animation:respira 2.6s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(5px);opacity:1}}
+
+/* ── rótulo de sección: la regla se dibuja sola con el scroll ──
+   Reemplaza al border-top que separaba las secciones: es la misma
+   línea, pero llega dibujándose en vez de estar puesta de antemano. */
+.rotulo{display:flex;flex-direction:column;gap:clamp(14px,1.6vw,20px)}
+.regla{
+  display:block;height:1px;width:100%;background:var(--linea-fuerte);
+  transform:scaleX(0);transform-origin:0 50%;
+}
+
+/* ═══════════ 02 · EL LUGAR ═══════════
+   Acá no hay ninguna foto a propósito: la sección es una declaración
+   que se enciende palabra por palabra a medida que bajás. */
+.lugar{
+  display:flex;flex-direction:column;gap:clamp(48px,7vw,110px);
+  padding:clamp(80px,11vw,165px) var(--pad) clamp(70px,9vw,130px);
+}
+.lugar .titulo-l{max-width:15ch}
+
+/* Una sola columna de contenido y, al lado, la columna de la marca.
+   Antes eran dos bandas apiladas y la marca vivía en la de arriba: se movía
+   con el scroll y desaparecía a mitad de sección. Ahora la marca tiene su
+   propia columna de punta a punta y se queda quieta mientras el relato pasa. */
+.lugar-cuerpo{display:flex;flex-direction:column;gap:clamp(40px,5.5vw,88px)}
+@media(min-width:900px){
+  .lugar{
+    display:grid;align-items:start;
+    grid-template-columns:minmax(0,1.16fr) minmax(0,.84fr);
+    column-gap:clamp(40px,5vw,80px);
+    row-gap:clamp(56px,7vw,104px);
+  }
+  .lugar-cuerpo{grid-column:1;grid-row:1}
+  .lugar-marca-hueco{grid-column:2;grid-row:1;height:100%}
+  .cifras{grid-column:1 / -1;grid-row:2}
+}
+
+.lugar-decir{display:flex;flex-direction:column;gap:clamp(26px,3.8vw,54px)}
+.declaracion{
+  margin:0;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(22px,3.3vw,46px);line-height:1.12;letter-spacing:-.018em;
+  max-width:26ch;
+}
+
+/* ── la marca de la Plaza ──
+   Queda quieta mientras el texto pasa por al lado: no la mueve el scroll,
+   gira sola. El canvas es transparente, así que se apoya sobre la cal.
+
+   El tamaño es deliberado: la marca ACOMPAÑA al texto, no compite con él.
+   Con la caja más grande el logotipo quedaba más alto que el titular y la
+   sección pasaba a ser sobre la marca en vez de sobre el lugar. */
+.lugar-marca{
+  position:relative;
+  height:min(52vh,420px);
+  margin-inline:auto;
+  width:min(100%,320px);
+}
+
+/* ── en su lugar, y nada más ──
+   La marca ocupa su hueco en la columna y se queda ahí: scrollea con la
+   página como cualquier otro elemento. El único movimiento que tiene es el
+   giro, que corre solo y no depende del scroll.
+
+   NO va con `sticky` ni con `fixed`. Las dos la despegan del documento y la
+   hacen viajar con la ventana, que es exactamente lo que no se quiere: se
+   probaron las dos y las dos se sienten como que la marca te sigue. */
+@media(min-width:900px){
+  .lugar-marca{width:100%;height:min(74vh,640px)}
+}
+#ruedo,.lugar-marca-plana{
+  position:absolute;inset:0;width:100%;height:100%;
+}
+#ruedo{display:none;opacity:0;transition:opacity 1.2s ease}
+#ruedo.listo{opacity:1}
+.lugar-marca-plana{object-fit:contain;opacity:.92}
+
+/* El volumen solo donde vale la pena, y ahí el plano no va.
+   Se decide por el media query, NO por la clase .listo: atado al estado, el
+   plano desaparecía en el mismo cuadro en que el canvas empezaba a aparecer
+   y quedaba 1,2 s de hueco. La red por si WebGL falla es .sin3d, que la pone
+   el JS igual que .hay3d en el recorrido. */
+@media(min-width:900px) and (prefers-reduced-motion:no-preference){
+  #ruedo{display:block}
+  .lugar-marca:not(.sin3d) .lugar-marca-plana{display:none}
+}
+
+/* ── la foto de la sala ── */
+.lugar-foto{margin:0;display:flex;flex-direction:column;gap:12px}
+.lugar-foto-abrir{
+  appearance:none;border:0;padding:0;margin:0;background:none;
+  display:block;width:100%;position:relative;cursor:zoom-in;
+  color:inherit;font:inherit;text-align:left;
+}
+/* el marco recorta y la foto se mueve adentro: la sensación de capas es
+   que el contenido y su ventana no van pegados */
+.lugar-foto-marco{
+  display:block;overflow:hidden;position:relative;
+  aspect-ratio:3/2;border:1px solid var(--linea);
+  background:var(--realce);
+}
+.lugar-foto img{
+  width:100%;height:100%;object-fit:cover;
+  transform:scale(1.06) translate3d(var(--dx,0),var(--dy,0),0);
+  transition:transform var(--t-suave) var(--ease-salida);
+}
+.lugar-foto-lupa{
+  position:absolute;left:14px;bottom:14px;z-index:2;
+  padding:8px 12px;min-height:34px;display:inline-flex;align-items:center;
+  background:rgba(var(--velo),.92);border:1px solid var(--linea-fuerte);
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--tinta);
+  opacity:0;transform:translateY(6px);
+  transition:opacity var(--t-toque) var(--ease-salida),
+             transform var(--t-toque) var(--ease-salida);
+}
+@media (hover:hover) and (pointer:fine){
+  .lugar-foto-abrir:hover .lugar-foto-lupa,
+  .lugar-foto-abrir:focus-visible .lugar-foto-lupa{opacity:1;transform:none}
+}
+/* en touch no hay hover: el cartel se ve siempre, si no nada avisa que se abre */
+@media (hover:none){.lugar-foto-lupa{opacity:1;transform:none}}
+.lugar-foto-abrir:active .lugar-foto-marco{transform:scale(.99)}
+.lugar-foto-marco{transition:transform var(--t-toque) var(--ease-salida)}
+.lugar-foto figcaption{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--humo);line-height:1.5;
+}
+
+.cifras{
+  margin:0;display:flex;flex-wrap:wrap;
+  border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);
+}
+.cifra{
+  flex:1 1 132px;padding:16px 20px 18px;
+  display:flex;flex-direction:column;gap:4px;
+  border-left:1px solid var(--linea);
+}
+.cifra:first-child{border-left:0}
+.cifra dt{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--humo);
+}
+.cifra dd{
+  margin:0;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(26px,3vw,36px);line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.cifra dd em{font-family:var(--f-mono);font-style:normal;font-size:13px;color:var(--humo)}
+
+/* ═══════════ 03 · MANIFIESTO ═══════════ */
+.manifiesto{
+  padding:clamp(70px,10vw,150px) var(--pad);
+  display:flex;flex-direction:column;gap:clamp(24px,3.5vw,44px);
+}
+.manifiesto-cols{display:grid;gap:clamp(20px,3vw,48px);grid-template-columns:1fr}
+@media(min-width:820px){.manifiesto-cols{grid-template-columns:1fr 1fr}}
+
+/* ═══════════ CAPAS ═══════════
+   La página es una pila de hojas, no un scroll plano. Cada bloque grande
+   monta unos píxeles sobre el anterior, con la esquina redondeada y una
+   sombra corta: se lee como una hoja apoyada encima, no como un borde.
+   Es solo apariencia — no cambia el flujo ni el orden del documento. */
+.hoja{
+  position:relative;
+  border-top-left-radius:var(--radio-hoja,18px);
+  border-top-right-radius:var(--radio-hoja,18px);
+  margin-top:calc(var(--monta,34px) * -1);
+  box-shadow:0 -1px 0 var(--linea), 0 -18px 40px -24px rgba(16,18,22,.45);
+}
+/* cada una por encima de la anterior, o la sombra quedaría tapada */
+.muestras{z-index:2}
+.recorrido{z-index:3}
+.visitar{z-index:4}
+.pie{z-index:5}
+@media(max-width:767px){
+  :root{--radio-hoja:12px;--monta:20px}
+}
+
+/* ═══════════ 04 · MUESTRAS (el índice del archivo) ═══════════
+   Sin fotos: las muestras se listan como fichas de catálogo y las
+   imágenes se ven de una sola forma en todo el sitio, caminando el
+   pasillo de la sección siguiente. */
+.muestras{background:var(--fondo)}
+
+.fichas{
+  list-style:none;margin:0;counter-reset:f;
+  padding:0 var(--pad);
+}
+.ficha{
+  counter-increment:f;
+  display:grid;grid-template-columns:1fr;gap:8px;
+  padding:clamp(22px,2.7vw,34px) 0;
+  border-top:1px solid var(--linea);
+  /* una sola encendida por vez, como pasaba con el riel */
+  opacity:.42;transition:opacity var(--t-suave) var(--ease-salida);
+}
+.ficha:last-child{border-bottom:1px solid var(--linea)}
+/* una vez leída no vuelve a apagarse del todo: lo que ya pasó se distingue */
+.ficha.visto{opacity:.62}
+.ficha.foco{opacity:1}
+.ficha::before{
+  content:counter(f,decimal-leading-zero);
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;
+  color:var(--humo);font-variant-numeric:tabular-nums;
+}
+@media(min-width:900px){
+  .ficha{
+    grid-template-columns:54px 168px minmax(0,.85fr) minmax(0,1.15fr) 104px;
+    gap:0 clamp(20px,2.2vw,34px);align-items:start;
+  }
+  .ficha::before{padding-top:.6em}
+}
+.ficha-fecha{
+  margin:0;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--humo);padding-top:.7em;
+}
+.ficha-titulo{
+  margin:0;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(22px,2.5vw,32px);line-height:1.06;letter-spacing:-.014em;
+  transition:transform var(--t-suave) var(--ease-salida);
+}
+.ficha.foco .ficha-titulo{transform:translateX(6px)}
+.ficha-cuerpo{display:flex;flex-direction:column;gap:7px}
+.ficha-artista{margin:0;font-size:14px;color:var(--humo)}
+.ficha-copy{margin:0;font-size:14.5px;line-height:1.55;opacity:.82;max-width:52ch}
+.ficha-marca{
+  margin:0;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--humo);padding-top:.9em;
+}
+@media(min-width:900px){.ficha-marca{text-align:right}}
+/* el punto marca las que se pueden recorrer adentro de la sala */
+.ficha-marca::before{
+  content:"";display:inline-block;width:5px;height:5px;margin-right:8px;
+  border-radius:50%;background:var(--tinta);vertical-align:.12em;
+}
+.ficha-marca-vacia{opacity:.55}
+.ficha-marca-vacia::before{background:none;border:1px solid var(--humo)}
+
+.fichas-pie{
+  margin:0;padding:clamp(26px,3vw,40px) var(--pad) clamp(70px,9vw,130px);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px 24px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--humo);
+}
+.fichas-pie-flecha{color:var(--tinta);opacity:.75}
+.fichas-pie-flecha{animation:respira 3.2s ease-in-out infinite}
+
+/* ═══════════ 06 · VISITAR ═══════════ */
+.visitar{padding:clamp(90px,11vw,165px) var(--pad) clamp(70px,10vw,150px);background:var(--fondo)}
+.visitar-grid{display:grid;gap:clamp(32px,5vw,72px);grid-template-columns:1fr}
+@media(min-width:900px){.visitar-grid{grid-template-columns:1fr 1fr}}
+.datos{margin:0;display:flex;flex-direction:column}
+.dato{
+  padding:18px 0;border-top:1px solid var(--linea);
+  display:grid;gap:4px 24px;grid-template-columns:1fr;
+}
+@media(min-width:560px){.dato{grid-template-columns:200px 1fr}}
+.dato:last-child{border-bottom:1px solid var(--linea)}
+.dato dt{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--humo);padding-top:3px;
+}
+.dato dd{margin:0}
+.dato a{
+  border-bottom:1px solid var(--linea-fuerte);
+  transition:border-color var(--t-toque) var(--ease-salida),
+             opacity var(--t-toque) var(--ease-salida);
+}
+.dato a:hover{border-color:var(--tinta)}
+/* entradas e Instagram son la única acción que pide la página: en touch,
+   sin :active, no acusa recibo de nada */
+.dato a:active{opacity:.55}
+
+/* ═══════════ PIE ═══════════ */
+.pie{
+  padding:clamp(50px,7vw,90px) var(--pad);
+  border-top:1px solid var(--linea);
+  display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;
+}
+.pie-logo{width:150px;height:auto;filter:invert(1) brightness(1.12);opacity:.85}
+.pie-linea{
+  margin:0;font-family:var(--f-mono);font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--humo);
+}
+
+/* ═══════════ CELULAR: versión simple ═══════════
+   Sin pin y sin scrub. El índice de muestras ya es una lista: en
+   celular se apila sola y no necesita ninguna versión aparte. */
+@media(max-width:767px){
+  body{font-size:16px}
+  .barra-nav{display:none}
+  .barra-logo img{width:112px}
+
+  .portada{height:auto}
+  .portada-pin{height:88vh;min-height:520px}
+  .sello{width:min(84vmin,420px);height:min(84vmin,420px)}
+
+  .declaracion{max-width:none}
+  .ficha{opacity:1}
+  .ficha-titulo{font-size:24px}
+}
+
+/* ═══════════ MOVIMIENTO REDUCIDO ═══════════ */
+@media (prefers-reduced-motion:reduce){
+  .sello-gira,.pista span{animation:none}
+  .dato a,.barra-nav a{transition:none}
+  .portada{height:auto}
+  .portada-pin{height:100vh;position:relative}
+  .regla{transform:none}
+  .visor-cerrar:active{transform:none}
+  .ficha{opacity:1;transition:none}
+  .ficha-titulo{transition:none}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CAPA DE MOVIMIENTO
+   Todo lo que sigue se agregó en la segunda pasada: la entrada,
+   la luz de sala, la cinta de nombres y el foco del índice.
+   Mismo sistema de color: cal, tinta y línea. Ningún acento.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 00 · UMBRAL (la entrada) ──────────────────────────────
+   Dos hojas que se abren, como el portón del redondel.
+   El fallback CSS lo saca solo si el JS nunca corre. */
+.umbral{position:fixed;inset:0;z-index:300;pointer-events:none;
+  animation:umbral-solo .5s ease 3.4s forwards}
+html.js .umbral{animation:none}
+@keyframes umbral-solo{to{opacity:0;visibility:hidden}}
+.umbral.fuera{display:none}
+
+.umbral-hoja{
+  position:absolute;left:-1px;right:-1px;height:50.4%;
+  background:var(--fondo);will-change:transform;
+}
+.umbral-arriba{top:0}
+.umbral-abajo{bottom:0}
+
+.umbral-centro{
+  position:absolute;inset:0;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding-inline:var(--pad);
+}
+.umbral-marca{
+  margin:0;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(28px,5vw,52px);line-height:1;letter-spacing:-.015em;
+}
+.umbral-riel{
+  margin:0;width:min(52vw,420px);height:1px;
+  background:var(--linea);overflow:hidden;
+}
+.umbral-riel i{display:block;height:100%;width:0;background:var(--tinta)}
+.umbral-anio{
+  margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;
+  color:var(--humo);font-variant-numeric:tabular-nums;
+}
+
+/* ── luz de sala: sigue al puntero, muy tenue ── */
+.luz{
+  position:fixed;top:0;left:0;width:640px;height:640px;
+  margin:-320px 0 0 -320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,18,22,.052),rgba(16,18,22,.022) 44%,transparent 68%);
+  pointer-events:none;z-index:90;opacity:0;
+  mix-blend-mode:multiply;will-change:transform;
+}
+@media (hover:hover) and (pointer:fine){.luz.viva{opacity:1;transition:opacity .8s ease}}
+/* adentro de la sala no hay linterna: estás dentro de la escena */
+.luz.apagada{opacity:0}
+
+/* ── barra: hover con máscara + índice de escena ── */
+.nt{display:block;overflow:hidden;height:1.05em;position:relative}
+.nt span{display:block;transition:transform var(--t-toque) var(--ease-salida)}
+@media (hover:hover) and (pointer:fine){
+  .barra-nav a:hover .nt span,.barra-nav a:focus-visible .nt span{transform:translateY(-100%)}
+}
+.indice{
+  margin:0 4px 0 0;font-family:var(--f-mono);font-size:10.5px;
+  letter-spacing:.14em;color:var(--humo);font-variant-numeric:tabular-nums;
+}
+.indice .ml{height:1.1em}
+
+/* ── cinta: los nombres que pasaron, corriendo ── */
+.cinta{
+  overflow:hidden;border-top:1px solid var(--linea);
+  border-bottom:1px solid var(--linea);
+  padding:clamp(16px,2.4vw,26px) 0;
+}
+.cinta-riel{display:flex;width:max-content;will-change:transform}
+.cinta-grupo{
+  display:flex;align-items:center;gap:clamp(20px,3vw,40px);
+  padding-right:clamp(20px,3vw,40px);flex:none;
+}
+.cinta-grupo b{
+  font-family:var(--f-display);font-weight:300;
+  font-size:clamp(20px,3.2vw,40px);line-height:1;
+  letter-spacing:-.01em;color:var(--humo);white-space:nowrap;
+}
+.cinta-grupo i{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--linea-fuerte);flex:none;
+}
+
+/* ── manifiesto: el texto se enciende palabra por palabra ── */
+.pl{display:inline-block;opacity:.2}
+/* la declaración del lugar es un bloque grande: apagada tiene que leerse
+   como gris, no como casi nada */
+.declaracion .pl{opacity:.24}
+
+/* ── pie: la marca grande, cortada por el borde ── */
+.pie-marca{
+  margin:clamp(20px,4vw,50px) 0 calc(-.16em - 1px);
+  width:100%;text-align:center;
+  font-family:var(--f-display);font-weight:300;
+  font-size:clamp(52px,15.5vw,240px);line-height:.82;
+  letter-spacing:-.03em;color:var(--tinta);opacity:.13;
+  white-space:nowrap;
+}
+.pie{overflow:hidden}
+.pie-marca .ml{height:.82em}
+
+/* ── celular: la capa de movimiento, simple ── */
+@media(max-width:767px){
+  .luz{display:none}
+  .cinta-grupo b{font-size:22px}
+  .recorrido.hay3d{height:auto}
+  .recorrido.hay3d .recorrido-pin{display:none}
+  .recorrido.hay3d .sala-lista{display:block}
+  .umbral-riel{width:66vw}
+  .pie-marca{opacity:.16}
+}
+
+/* ── movimiento reducido ── */
+@media (prefers-reduced-motion:reduce){
+  .umbral{display:none}
+  .luz{display:none}
+  .nt span{transition:none}
+  .pl{opacity:1}
+  .cinta-riel{transform:none !important}
+  .recorrido.hay3d{height:auto}
+  .recorrido.hay3d .recorrido-pin{display:none}
+  .recorrido.hay3d .sala-lista{display:block}
+  .visor{backdrop-filter:none}
+}
+
+/* ═══════════ 05 · EL RECORRIDO ═══════════
+   Por defecto se ve la grilla: eso es lo que queda sin JS, sin WebGL,
+   con movimiento reducido y en celular. El JS agrega .hay3d y recién
+   ahí aparece la sala caminable. */
+.recorrido{position:relative;background:var(--fondo)}
+.recorrido-pin{display:none}
+
+.recorrido.hay3d{height:660vh}
+.recorrido.hay3d .sala-lista{display:none}
+.recorrido.hay3d .recorrido-pin{
+  display:block;height:100vh;position:sticky;top:0;overflow:hidden;
+  background:var(--fondo);
+}
+#sala{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  opacity:0;transition:opacity 1s ease;
+}
+#sala.listo{opacity:1}
+
+.recorrido-hud{
+  position:absolute;left:var(--pad);bottom:clamp(28px,6vh,58px);
+  z-index:2;pointer-events:none;max-width:min(46ch,60vw);
+}
+.recorrido-muestra{
+  margin:10px 0 6px;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(24px,3.6vw,44px);line-height:1;letter-spacing:-.018em;
+}
+/* la máscara recorta a una línea: el nombre no puede envolver */
+.recorrido-muestra .ln{white-space:nowrap}
+.recorrido-muestra .ml{height:1.02em}
+.recorrido-nota{margin:0;font-size:14.5px;color:var(--humo);line-height:1.45}
+
+.recorrido-cuenta{
+  position:absolute;right:var(--pad);bottom:clamp(28px,6vh,58px);z-index:2;
+  margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;
+  color:var(--humo);font-variant-numeric:tabular-nums;pointer-events:none;
+}
+.recorrido-cuenta b{font-weight:400;color:var(--tinta)}
+.recorrido-cuenta i{font-style:normal;margin:0 6px;opacity:.5}
+
+.recorrido-guia{
+  position:absolute;left:50%;transform:translateX(-50%);
+  top:calc(var(--barra-h) + 18px);z-index:2;margin:0;
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--humo);opacity:.7;
+  pointer-events:none;text-align:center;
+  transition:opacity .6s ease;
+}
+/* apenas mirás alrededor la instrucción sobra */
+.recorrido-guia.ida{opacity:0}
+
+/* ── la grilla (respaldo y celular) ── */
+.sala-lista{padding:clamp(60px,8vw,110px) var(--pad) clamp(50px,7vw,100px)}
+.sala-cabecera{display:flex;flex-direction:column;gap:12px;margin-bottom:clamp(28px,4vw,48px)}
+.sala-grilla{columns:1;column-gap:18px}
+@media(min-width:640px){.sala-grilla{columns:2}}
+@media(min-width:1040px){.sala-grilla{columns:3;column-gap:22px}}
+.sala-obra{margin:0 0 18px;break-inside:avoid;display:flex;flex-direction:column;gap:8px}
+.sala-obra img{width:100%;height:auto;border:1px solid var(--linea)}
+/* Es la vista principal en celular: 29 fotos que aparecían de un saque al
+   terminar de decodificar. Cada una entra cuando está lista.
+   Dos candados, porque acá esconder algo sale caro:
+     · .js — si el JS no corre nunca se agrega .cargada y quedarían en negro;
+     · no-preference dentro del @media — si el override viviera suelto en otra
+       parte del archivo, ganaría el que esté más abajo. Ya pasó. */
+@media (prefers-reduced-motion:no-preference){
+  .js .sala-obra img{opacity:0;transition:opacity .5s var(--ease-salida)}
+  .js .sala-obra img.cargada{opacity:1}
+}
+.sala-obra figcaption{display:flex;flex-direction:column;gap:2px}
+.sala-obra b{
+  font-family:var(--f-mono);font-weight:400;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--humo);
+}
+.sala-obra span{font-size:14px;line-height:1.4;opacity:.9}
+
+/* ── el visor ── */
+.visor{
+  position:fixed;inset:0;z-index:250;
+  background:rgba(10,11,13,.96);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(40px,6vh,72px) var(--pad);
+}
+.visor[hidden]{display:none}
+.visor-marco{
+  margin:0;display:flex;flex-direction:column;gap:14px;
+  max-width:min(1100px,100%);max-height:100%;
+}
+.visor-marco img{
+  max-width:100%;max-height:calc(100vh - 168px);
+  width:auto;height:auto;object-fit:contain;
+  border:1px solid var(--linea);margin-inline:auto;
+}
+.visor-marco figcaption{display:flex;flex-direction:column;gap:4px;text-align:center}
+.visor-marco b{
+  font-family:var(--f-mono);font-weight:400;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--humo);
+}
+.visor-marco span{font-size:15px;opacity:.92}
+.visor-cerrar{
+  position:absolute;top:clamp(16px,3vh,30px);right:var(--pad);
+  background:none;border:1px solid var(--linea-fuerte);color:var(--tinta);
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;padding:11px 18px;cursor:pointer;
+  min-height:44px;
+  transition:border-color var(--t-toque) var(--ease-salida),
+             background var(--t-toque) var(--ease-salida),
+             transform var(--t-toque) var(--ease-salida);
+}
+.visor-cerrar:hover{border-color:var(--tinta);background:rgba(var(--velo),.08)}
+.visor-cerrar:active{transform:scale(.96)}
+
+/* ═══════════ 03 · EL ARCHIVO (la entrada al índice) ═══════════
+   Antes de listar nada se dibujan diez paneles vacíos: es lo que son
+   las muestras antes de montarse. Recién después llega el índice. */
+.archivo{
+  padding:clamp(70px,10vw,140px) 0 clamp(34px,4.5vw,62px);
+  display:flex;flex-direction:column;gap:clamp(32px,4.6vw,58px);
+}
+.archivo-texto{
+  padding-inline:var(--pad);
+  display:flex;flex-direction:column;gap:clamp(18px,2.6vw,30px);
+}
+.archivo-planos{padding-inline:var(--pad)}
+.planos-svg{
+  width:100%;height:clamp(88px,12vw,152px);display:block;overflow:visible;
+}
+.planos-svg rect,.planos-svg circle{
+  fill:none;stroke:var(--linea-fuerte);stroke-width:1.1;
+  vector-effect:non-scaling-stroke;
+}
+.archivo-cuenta{
+  margin:16px 0 0;display:flex;align-items:baseline;gap:11px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--humo);
+}
+.archivo-cuenta .num{
+  font-family:var(--f-display);font-weight:300;line-height:1;
+  font-size:clamp(30px,4.2vw,50px);letter-spacing:-.02em;color:var(--tinta);
+  font-variant-numeric:tabular-nums;
+}
+
+/* La barra NO transiciona el color al darse vuelta, y es a propósito.
+   El fondo se arma con --velo, que es una custom property y no interpola:
+   salta en un cuadro. Lo mismo el filter del logo y el conic-gradient del
+   anillo. Si el color tardara 350 ms, durante ese rato el texto quedaría a
+   mitad de camino sobre un piso ya invertido: un bajón de contraste, cuatro
+   veces por visita. El vuelco es un borde duro, tiene que verse como un corte. */
+
+@media(max-width:767px){
+  .planos-svg{height:74px}
+}
+@media (prefers-reduced-motion:reduce){
+  .planos-svg rect,.planos-svg circle{stroke-dashoffset:0 !important}
+}

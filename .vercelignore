@@ -1,0 +1,5 @@
+# Nada de esto tiene por qué servirse desde el sitio publicado.
+serve.py
+CLAUDE.md
+.claude/
+_capturas/

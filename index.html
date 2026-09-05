@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>document.documentElement.className="js"</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espacio Arte · Plaza de Toros Real de San Carlos</title>
+<meta name="description" content="Programa de exposiciones dentro del redondel de 1910 de la Plaza de Toros Real de San Carlos, Colonia del Sacramento, Uruguay.">
+<meta property="og:title" content="Espacio Arte">
+<meta property="og:description" content="Una sala de exposiciones adentro de un redondel de 1910.">
+<meta property="og:image" content="assets/img/bianki-sala.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0A0B0D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400&display=swap">
+<!-- Poppins es la tipografía del logo de la Plaza. Se pide SOLO para el
+     logotipo 3D y solo con las letras que usa (parámetro text=): son unos
+     pocos KB, no la familia entera. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&text=PLAZDETORSCN%20%C2%AE&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 00 · UMBRAL — la entrada. Tiene animación CSS de respaldo: si el JS
+     no corre, se va solo a los 3,4 s y nunca deja la página tapada. -->
+<div class="umbral invertido" id="umbral" aria-hidden="true">
+  <i class="umbral-hoja umbral-arriba"></i>
+  <i class="umbral-hoja umbral-abajo"></i>
+  <div class="umbral-centro">
+    <p class="umbral-marca">Espacio Arte</p>
+    <p class="umbral-riel"><i id="umbralRiel"></i></p>
+    <p class="umbral-anio"><span id="umbralAnio">1910</span></p>
+  </div>
+</div>
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="barra-logo" href="#portada" aria-label="Espacio Arte — inicio">
+    <span class="isotipo" aria-hidden="true"><img src="assets/logo-horizontal.png" alt=""></span>
+    <span class="barra-marca" aria-hidden="true">Espacio<br>Arte</span>
+  </a>
+  <nav class="barra-nav" aria-label="Secciones">
+    <a href="#lugar"><span class="nt"><span>El lugar</span><span aria-hidden="true">El lugar</span></span></a>
+    <a href="#muestras"><span class="nt"><span>Muestras</span><span aria-hidden="true">Muestras</span></span></a>
+    <a href="#visitar"><span class="nt"><span>Visitar</span><span aria-hidden="true">Visitar</span></span></a>
+  </nav>
+  <p class="indice" aria-hidden="true"><span class="ml"><span class="ln" id="indiceNum">01</span></span></p>
+  <div class="ruedo" aria-hidden="true"><i id="ruedoFill"></i></div>
+</header>
+
+<main id="contenido">
+
+<!-- ══════════ 01 · PORTADA ══════════ -->
+<section class="portada" id="portada" data-escena="01">
+  <div class="portada-pin">
+    <canvas id="lienzo" aria-hidden="true"></canvas>
+    <img class="portada-poster" src="assets/logo-vertical.png" alt="" aria-hidden="true">
+
+    <svg class="sello" viewBox="0 0 320 320" aria-hidden="true">
+      <defs><path id="aro" d="M160,160 m-133,0 a133,133 0 1,1 266,0 a133,133 0 1,1 -266,0"></path></defs>
+      <g class="sello-gira"><text><textPath href="#aro" startOffset="0">ESPACIO ARTE · PLAZA DE TOROS REAL DE SAN CARLOS · COLONIA DEL SACRAMENTO · URUGUAY · </textPath></text></g>
+    </svg>
+
+    <div class="portada-texto">
+      <p class="eyebrow">Plaza de Toros Real de San Carlos · Colonia del Sacramento</p>
+      <h1 class="titulo-xl" data-lineas>
+        <span class="ml"><span class="ln">Espacio</span></span><span class="ml"><span class="ln">Arte</span></span>
+      </h1>
+      <p class="portada-bajada">Una sala de exposiciones adentro de un redondel de 1910.</p>
+    </div>
+
+    <p class="pista" aria-hidden="true"><span>Bajá</span></p>
+  </div>
+</section>
+
+<!-- ══════════ 02 · EL LUGAR ══════════
+     Dos bandas: arriba el texto con la marca de la Plaza girando al costado,
+     abajo la foto de la sala contra el remate del texto. -->
+<section class="lugar" id="lugar" data-escena="02">
+
+  <div class="lugar-cuerpo">
+    <div class="lugar-decir">
+      <div class="rotulo">
+        <i class="regla" data-regla aria-hidden="true"></i>
+        <p class="eyebrow">01 — El lugar</p>
+      </div>
+      <h2 class="titulo-l" data-lineas>
+        <span class="ml"><span class="ln">Ocho corridas.</span></span><span class="ml"><span class="ln">Ciento once años</span></span><span class="ml"><span class="ln">de silencio.</span></span>
+      </h2>
+      <p class="declaracion" data-encender>La Plaza de Toros Real de San Carlos se inauguró el 9 de enero de 1910: cien metros de diámetro, veintidós de alto, diez mil espectadores. Alcanzó a hacer ocho corridas antes de que Uruguay prohibiera la actividad en 1912.</p>
+    </div>
+
+    <figure class="lugar-foto">
+      <!-- botón de verdad, no un div con onclick: se abre con Enter, entra en
+           el orden de tabulación y un lector de pantalla dice qué hace -->
+      <button class="lugar-foto-abrir" type="button"
+              aria-label="Ver la foto de la sala en grande">
+        <span class="lugar-foto-marco">
+          <!-- la chica alcanza en celular: son 121 KB contra 435 -->
+          <img src="assets/img/bianki-sala.jpg"
+               srcset="assets/img/bianki-sala-sm.jpg 760w, assets/img/bianki-sala.jpg 1600w"
+               sizes="(min-width:900px) 44vw, 92vw"
+               alt="La sala de exposiciones dentro de la plaza: paños pintados colgando de la estructura de hierro, con público recorriéndola."
+               width="1600" height="1066" loading="lazy">
+        </span>
+        <span class="lugar-foto-lupa" aria-hidden="true">Ver en grande</span>
+      </button>
+      <figcaption>La sala montada bajo la estructura de hierro del redondel.</figcaption>
+    </figure>
+
+    <p class="declaracion" data-encender>Después cerró, y quedó así más de un siglo. Volvió a abrir restaurada en diciembre de 2021. Espacio Arte ocupa su interior.</p>
+  </div>
+
+  <!-- El hueco reserva la columna; la marca de adentro se planta con position
+       fixed y no se mueve mientras dura la sección. Sin JS se queda acá y
+       scrollea como cualquier otra cosa. -->
+  <div class="lugar-marca-hueco" aria-hidden="true">
+    <div class="lugar-marca">
+      <canvas id="ruedo"></canvas>
+      <img class="lugar-marca-plana" src="assets/logo-plaza-toros.webp"
+           alt="" width="1000" height="1000" loading="lazy">
+    </div>
+  </div>
+
+  <dl class="cifras" data-revelar-grupo>
+    <div class="cifra" data-revelar-item><dt>Inaugurada</dt><dd><span class="num" data-hasta="1910" data-formato="plano">1910</span></dd></div>
+    <div class="cifra" data-revelar-item><dt>Diámetro</dt><dd><span class="num" data-hasta="100">100</span> <em>m</em></dd></div>
+    <div class="cifra" data-revelar-item><dt>Altura</dt><dd><span class="num" data-hasta="22">22</span> <em>m</em></dd></div>
+    <div class="cifra" data-revelar-item><dt>Espectadores</dt><dd><span class="num" data-hasta="10000">10.000</span></dd></div>
+    <div class="cifra" data-revelar-item><dt>Corridas</dt><dd><span class="num" data-hasta="8">8</span></dd></div>
+    <div class="cifra" data-revelar-item><dt>Años cerrada</dt><dd><span class="num" data-hasta="111">111</span></dd></div>
+    <div class="cifra" data-revelar-item><dt>Reapertura</dt><dd><span class="num" data-hasta="2021" data-formato="plano">2021</span></dd></div>
+  </dl>
+</section>
+
+<!-- ══════════ 03 · QUÉ ES ══════════ -->
+<!-- TEXTO PROVISORIO: redactado a partir de datos verificados del predio y de las
+     muestras relevadas. Falta el texto institucional de Laura para reemplazarlo. -->
+<section class="manifiesto" data-escena="03">
+  <div class="rotulo">
+    <i class="regla" data-regla aria-hidden="true"></i>
+    <p class="eyebrow">02 — Qué es</p>
+  </div>
+  <h2 class="titulo-l" data-lineas>
+    <span class="ml"><span class="ln">Un anillo de cien metros</span></span><span class="ml"><span class="ln">donde la obra cuelga</span></span><span class="ml"><span class="ln">del aire.</span></span>
+  </h2>
+  <div class="manifiesto-cols">
+    <p class="parrafo">Espacio Arte es el programa de exposiciones de la Plaza. Cada muestra ocupa el interior del redondel: los paneles se mueven, las piezas se cuelgan de la estructura y el edificio —que no es neutro— entra en la conversación.</p>
+    <p class="parrafo">Pasaron por acá pintores, ilustradores, colectivos textiles y artistas digitales. La sala cambia varias veces al año, y cada montaje es distinto porque el espacio obliga a inventarlo de nuevo.</p>
+  </div>
+</section>
+
+<!-- ══════════ CINTA — los nombres que pasaron por la sala ══════════ -->
+<div class="cinta invertido" aria-hidden="true">
+  <div class="cinta-riel" id="cintaRiel">
+    <span class="cinta-grupo">
+      <b>Interfaz</b><i></i><b>Gente en Obra</b><i></i><b>Gol en 3 colores</b><i></i><b>Espacio Bianki</b><i></i><b>The garden of the early delights</b><i></i><b>Sinergia</b><i></i><b>Relatos Dibujados</b><i></i><b>El Secreto de Magín</b><i></i><b>Sinfonía de Colores</b><i></i>
+    </span>
+  </div>
+</div>
+
+<!-- ══════════ 04 · MUESTRAS ══════════ -->
+<section class="muestras invertido hoja" id="muestras" data-escena="04">
+  <div class="archivo">
+    <div class="archivo-texto">
+      <div class="rotulo">
+        <i class="regla" data-regla aria-hidden="true"></i>
+        <p class="eyebrow">03 — El archivo</p>
+      </div>
+      <h2 class="titulo-l" data-lineas>
+        <span class="ml"><span class="ln">Diez muestras</span></span><span class="ml"><span class="ln">colgaron de esta</span></span><span class="ml"><span class="ln">misma estructura.</span></span>
+      </h2>
+      <p class="parrafo" data-revelar>De algunas quedó registro fotográfico completo. De otras, apenas el nombre y una ficha. Lo que sigue es el índice entero, en el orden del archivo. Las que tienen registro se recorren después, adentro de la sala.</p>
+    </div>
+    <div class="archivo-planos" aria-hidden="true">
+      <svg class="planos-svg" viewBox="0 0 1400 190" fill="none" preserveAspectRatio="xMinYMid meet" aria-hidden="true"><g class="plano" data-plano="0"><rect pathLength="1" x="10" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="40" cy="172" r="5"></circle><circle pathLength="1" cx="98" cy="172" r="5"></circle></g><g class="plano" data-plano="1"><rect pathLength="1" x="150" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="180" cy="172" r="5"></circle><circle pathLength="1" cx="238" cy="172" r="5"></circle></g><g class="plano" data-plano="2"><rect pathLength="1" x="290" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="320" cy="172" r="5"></circle><circle pathLength="1" cx="378" cy="172" r="5"></circle></g><g class="plano" data-plano="3"><rect pathLength="1" x="430" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="460" cy="172" r="5"></circle><circle pathLength="1" cx="518" cy="172" r="5"></circle></g><g class="plano" data-plano="4"><rect pathLength="1" x="570" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="600" cy="172" r="5"></circle><circle pathLength="1" cx="658" cy="172" r="5"></circle></g><g class="plano" data-plano="5"><rect pathLength="1" x="710" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="740" cy="172" r="5"></circle><circle pathLength="1" cx="798" cy="172" r="5"></circle></g><g class="plano" data-plano="6"><rect pathLength="1" x="850" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="880" cy="172" r="5"></circle><circle pathLength="1" cx="938" cy="172" r="5"></circle></g><g class="plano" data-plano="7"><rect pathLength="1" x="990" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="1020" cy="172" r="5"></circle><circle pathLength="1" cx="1078" cy="172" r="5"></circle></g><g class="plano" data-plano="8"><rect pathLength="1" x="1130" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="1160" cy="172" r="5"></circle><circle pathLength="1" cx="1218" cy="172" r="5"></circle></g><g class="plano" data-plano="9"><rect pathLength="1" x="1270" y="14" width="118" height="150" rx="1"></rect><circle pathLength="1" cx="1300" cy="172" r="5"></circle><circle pathLength="1" cx="1358" cy="172" r="5"></circle></g></svg>
+      <p class="archivo-cuenta"><span class="num" data-hasta="10" data-formato="plano">10</span><i>paneles</i></p>
+    </div>
+  </div>
+
+  <ol class="fichas">
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Septiembre 2026</p>
+      <h3 class="ficha-titulo">Interfaz</h3>
+      <div class="ficha-cuerpo"><p class="ficha-artista">Bernardo Cardarelli · BCPERETTI</p><p class="ficha-copy">Una instalación textil que explora límites, conexiones y transiciones entre lo material y lo intangible. La muestra transforma el espacio en una membrana habitable, donde cada costura se vuelve cicatriz y puente.</p></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Mayo 2026</p>
+      <h3 class="ficha-titulo">Gente en Obra</h3>
+      <div class="ficha-cuerpo"><p class="ficha-artista">Habitar · colectivo</p><p class="ficha-copy">Lanzamiento de una nueva muestra de arte en la Plaza. El cartel de sala la subtitula <i>Habitar</i>.</p></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Marzo 2026</p>
+      <h3 class="ficha-titulo">Gol en 3 colores</h3>
+      <div class="ficha-cuerpo"><p class="ficha-artista">Daniel Supervielle</p><p class="ficha-copy">A través de su serie <i>Multitudes</i>, Supervielle construyó un lenguaje visual para el corazón emocional del fútbol: el hincha anónimo, ese protagonista colectivo que celebra, sufre y le da sentido al juego.</p></div>
+      <p class="ficha-marca ficha-marca-vacia">Solo ficha</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">The garden of the early delights</h3>
+      <div class="ficha-cuerpo"><p class="ficha-artista">Guido Iafiliola «Glitchdo» · Hungry Art</p><p class="ficha-copy">Impresión en Hahnemühle Photo Rag. La irrupción de la inteligencia artificial generativa en el arte abrió nuevas fronteras en la concepción, la creación y el disfrute de la obra.</p></div>
+      <p class="ficha-marca ficha-marca-vacia">Solo ficha</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">Espacio Bianki</h3>
+      <div class="ficha-cuerpo"><p class="ficha-copy">Paños pintados colgados desde la estructura de hierro, en el interior del redondel.</p></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">Sinergia</h3>
+      <div class="ficha-cuerpo"></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">Relatos Dibujados</h3>
+      <div class="ficha-cuerpo"></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">El Secreto de Magín</h3>
+      <div class="ficha-cuerpo"></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">Sinfonía de Colores</h3>
+      <div class="ficha-cuerpo"></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+    <li class="ficha" data-ficha>
+      <p class="ficha-fecha">Sin fecha registrada</p>
+      <h3 class="ficha-titulo">Lanzamiento interactivo</h3>
+      <div class="ficha-cuerpo"><p class="ficha-copy">Proyecciones sobre la estructura, música en vivo e intervención de danza. <i>Lanzamiento interactivo</i> es el nombre de la carpeta de archivo: falta confirmar el título real de la noche.</p></div>
+      <p class="ficha-marca">En la sala</p>
+    </li>
+  </ol>
+
+  <p class="fichas-pie">
+    <span>Las diez, en el orden del archivo.</span>
+    <span class="fichas-pie-flecha" aria-hidden="true">Seguí bajando para entrar a la sala ↓</span>
+  </p>
+
+</section>
+
+<!-- ══════════ 05 · EL RECORRIDO ══════════ -->
+<section class="recorrido hoja" id="recorrido" data-escena="05">
+  <div class="recorrido-pin">
+    <canvas id="sala" aria-hidden="true"></canvas>
+
+    <div class="recorrido-hud" aria-hidden="true">
+      <p class="eyebrow">04 — El recorrido</p>
+      <p class="recorrido-muestra"><span class="ml"><span class="ln" id="salaMuestra"></span></span></p>
+      <p class="recorrido-nota" id="salaNota"></p>
+    </div>
+
+    <p class="recorrido-cuenta" aria-hidden="true"><b id="salaN">01</b><i>/</i><span id="salaTot">29</span></p>
+    <p class="recorrido-guia" aria-hidden="true">Mové el mouse para mirar alrededor · clic en una obra para verla</p>
+  </div>
+
+  <!-- Las mismas obras en grilla. Es lo que se ve sin WebGL, con movimiento
+       reducido y en celular; y es lo que lee un lector de pantalla siempre. -->
+  <div class="sala-lista">
+    <div class="sala-cabecera">
+      <p class="eyebrow">04 — El recorrido</p>
+      <h2 class="titulo-m">Las obras que pasaron por la sala</h2>
+    </div>
+    <div class="sala-grilla" data-revelar-grupo>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinergia-01.jpg" alt="Sinergia — pieza gráfica en rojo, negro y blanco." loading="lazy">
+        <figcaption><b>Sinergia</b><span>Pieza gráfica en rojo, negro y blanco</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinergia-02.jpg" alt="Sinergia — pintura de flores sobre fondo oscuro." loading="lazy">
+        <figcaption><b>Sinergia</b><span>Pintura de flores sobre fondo oscuro</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinergia-03.jpg" alt="Sinergia — escultura sobre pedestal, con obra colgada detrás." loading="lazy">
+        <figcaption><b>Sinergia</b><span>Escultura sobre pedestal, con obra colgada detrás</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/relatos-01.jpg" alt="Relatos Dibujados — público recorriendo la muestra bajo la estructura." loading="lazy">
+        <figcaption><b>Relatos Dibujados</b><span>Público recorriendo la muestra bajo la estructura</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/relatos-02.jpg" alt="Relatos Dibujados — serie de dibujos enmarcados." loading="lazy">
+        <figcaption><b>Relatos Dibujados</b><span>Serie de dibujos enmarcados</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/relatos-03.jpg" alt="Relatos Dibujados — los paneles y las barricas en el pasillo." loading="lazy">
+        <figcaption><b>Relatos Dibujados</b><span>Los paneles y las barricas en el pasillo</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/magin-01.jpg" alt="El Secreto de Magín — escultura ensamblada en la sala principal." loading="lazy">
+        <figcaption><b>El Secreto de Magín</b><span>Escultura ensamblada en la sala principal</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/magin-02.jpg" alt="El Secreto de Magín — dos piezas colgadas sobre tela rayada." loading="lazy">
+        <figcaption><b>El Secreto de Magín</b><span>Dos piezas colgadas sobre tela rayada</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/magin-03.jpg" alt="El Secreto de Magín — pinturas sobre el muro blanco." loading="lazy">
+        <figcaption><b>El Secreto de Magín</b><span>Pinturas sobre el muro blanco</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/magin-04.jpg" alt="El Secreto de Magín — pieza montada en vitrina." loading="lazy">
+        <figcaption><b>El Secreto de Magín</b><span>Pieza montada en vitrina</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinfonia-05.jpg" alt="Sinfonía de Colores — escultura de gran porte en el centro de la sala." loading="lazy">
+        <figcaption><b>Sinfonía de Colores</b><span>Escultura de gran porte en el centro de la sala</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinfonia-02.jpg" alt="Sinfonía de Colores — telas azules y rosadas montadas sobre caballetes." loading="lazy">
+        <figcaption><b>Sinfonía de Colores</b><span>Telas azules y rosadas montadas sobre caballetes</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinfonia-03.jpg" alt="Sinfonía de Colores — intervención con vestuario frente a los paneles." loading="lazy">
+        <figcaption><b>Sinfonía de Colores</b><span>Intervención con vestuario frente a los paneles</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinfonia-04.jpg" alt="Sinfonía de Colores — la sala montada con caballetes y pinturas." loading="lazy">
+        <figcaption><b>Sinfonía de Colores</b><span>La sala montada con caballetes y pinturas</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/sinfonia-01.jpg" alt="Sinfonía de Colores — cerámicas y pinturas en penumbra." loading="lazy">
+        <figcaption><b>Sinfonía de Colores</b><span>Cerámicas y pinturas en penumbra</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/../bianki-torre.jpg" alt="Espacio Bianki — torre de paños pintados colgando del techo." loading="lazy">
+        <figcaption><b>Espacio Bianki</b><span>Torre de paños pintados colgando del techo</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/../obra-figuras.jpg" alt="Espacio Bianki — detalle de una pieza textil." loading="lazy">
+        <figcaption><b>Espacio Bianki</b><span>Detalle de una pieza textil</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/obra-01.jpg" alt="Gente en Obra — cartel de sala de la muestra, subtitulada habitar." loading="lazy">
+        <figcaption><b>Gente en Obra</b><span>Cartel de sala de la muestra, subtitulada Habitar</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/obra-02.jpg" alt="Gente en Obra — muro de retratos pequeños, uno al lado del otro." loading="lazy">
+        <figcaption><b>Gente en Obra</b><span>Muro de retratos pequeños, uno al lado del otro</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/obra-03.jpg" alt="Gente en Obra — pieza azul y blanca sobre estructura de red." loading="lazy">
+        <figcaption><b>Gente en Obra</b><span>Pieza azul y blanca sobre estructura de red</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/obra-04.jpg" alt="Gente en Obra — la nave con una pieza orgánica corriendo por el muro." loading="lazy">
+        <figcaption><b>Gente en Obra</b><span>La nave con una pieza orgánica corriendo por el muro</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-01.jpg" alt="Interfaz — escultura de cables frente al cartel de espacio arte." loading="lazy">
+        <figcaption><b>Interfaz</b><span>Escultura de cables frente al cartel de Espacio Arte</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-02.jpg" alt="Interfaz — maraña de cordones de color, de cerca." loading="lazy">
+        <figcaption><b>Interfaz</b><span>Maraña de cordones de color, de cerca</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-03.jpg" alt="Interfaz — pieza roja sobre pedestal blanco." loading="lazy">
+        <figcaption><b>Interfaz</b><span>Pieza roja sobre pedestal blanco</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-04.jpg" alt="Interfaz — la sala blanca con las piezas sobre pedestales." loading="lazy">
+        <figcaption><b>Interfaz</b><span>La sala blanca con las piezas sobre pedestales</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-01.jpg" alt="Lanzamiento interactivo — proyección de color sobre las columnas de hierro." loading="lazy">
+        <figcaption><b>Lanzamiento interactivo</b><span>Proyección de color sobre las columnas de hierro</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-02.jpg" alt="Lanzamiento interactivo — los arcos iluminados, con público." loading="lazy">
+        <figcaption><b>Lanzamiento interactivo</b><span>Los arcos iluminados, con público</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-03.jpg" alt="Lanzamiento interactivo — set de música en vivo entre pantallas." loading="lazy">
+        <figcaption><b>Lanzamiento interactivo</b><span>Set de música en vivo entre pantallas</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-04.jpg" alt="Lanzamiento interactivo — intervención de danza en la galería." loading="lazy">
+        <figcaption><b>Lanzamiento interactivo</b><span>Intervención de danza en la galería</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 06 · VISITAR ══════════ -->
+<section class="visitar hoja" id="visitar" data-escena="06">
+  <div class="visitar-grid">
+    <div>
+      <div class="rotulo">
+        <i class="regla" data-regla aria-hidden="true"></i>
+        <p class="eyebrow">05 — Visitar</p>
+      </div>
+      <h2 class="titulo-l">Cómo llegar<br>y cuándo venir</h2>
+    </div>
+    <dl class="datos" data-revelar-grupo>
+      <div class="dato" data-revelar-item><dt>Dónde</dt><dd>Plaza de Toros Real de San Carlos<br>Colonia del Sacramento, Uruguay</dd></div>
+      <div class="dato" data-revelar-item><dt>Entradas y visitas guiadas</dt><dd><a href="https://redtickets.uy/productor/PlazaToros" target="_blank" rel="noopener">redtickets.uy · Plaza de Toros</a></dd></div>
+      <div class="dato" data-revelar-item><dt>Novedades</dt><dd><a href="https://www.instagram.com/plazadetoroscolonia/" target="_blank" rel="noopener">@plazadetoroscolonia</a></dd></div>
+      <div class="dato" data-revelar-item><dt>Horarios</dt><dd>A confirmar</dd></div>
+      <div class="dato dato-ancho" data-revelar-item><dt>¿Sos artista y querés exponer?</dt><dd>Escribinos por Instagram y contanos qué tenés en mente. La sala cambia varias veces al año.</dd></div>
+    </dl>
+  </div>
+</section>
+
+</main>
+
+<footer class="pie invertido hoja">
+  <img class="pie-logo" src="assets/logo-vertical.png" alt="Espacio Arte" width="180" height="220" loading="lazy">
+  <p class="pie-linea">Espacio Arte · Plaza de Toros Real de San Carlos · Colonia del Sacramento, Uruguay</p>
+  <p class="pie-marca" aria-hidden="true"><span class="ml"><span class="ln">Espacio Arte</span></span></p>
+</footer>
+
+<div class="luz" id="luz" aria-hidden="true"></div>
+
+<div class="visor invertido" id="visor" hidden>
+  <button class="visor-cerrar" id="visorCerrar" type="button" aria-label="Cerrar">Cerrar</button>
+  <figure class="visor-marco">
+    <img id="visorImg" alt="">
+    <figcaption><b id="visorMuestra"></b><span id="visorNota"></span></figcaption>
+  </figure>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
+<script src="js/redondel.js"></script>
+<script src="js/ruedo.js"></script>
+<script src="js/recorrido.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
