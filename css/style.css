@@ -228,7 +228,8 @@ a{color:inherit;text-decoration:none}
     row-gap:clamp(56px,7vw,104px);
   }
   .lugar-cuerpo{grid-column:1;grid-row:1}
-  .lugar-marca-hueco{grid-column:2;grid-row:1;height:100%}
+  /* centrada contra toda la columna de texto, no pegada arriba */
+  .lugar-marca-hueco{grid-column:2;grid-row:1;align-self:center}
   .cifras{grid-column:1 / -1;grid-row:2}
 }
 
@@ -262,7 +263,7 @@ a{color:inherit;text-decoration:none}
    hacen viajar con la ventana, que es exactamente lo que no se quiere: se
    probaron las dos y las dos se sienten como que la marca te sigue. */
 @media(min-width:900px){
-  .lugar-marca{width:100%;height:min(74vh,640px)}
+  .lugar-marca{width:100%;height:min(88vh,790px)}
 }
 #ruedo,.lugar-marca-plana{
   position:absolute;inset:0;width:100%;height:100%;

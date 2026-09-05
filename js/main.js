@@ -135,25 +135,70 @@
 
   /* ═══════ 02 · la marca de la Plaza, girando al costado ═══════
      Solo en pantalla grande y con movimiento permitido: es una firma, no
-     información, y no vale un tercer contexto WebGL en un teléfono. */
+     información, y no vale un tercer contexto WebGL en un teléfono.
+
+     Se prende cuando la ventana da el ancho, no solo al cargar. Antes era una
+     sola comprobación al arrancar: si la página cargaba en una ventana angosta
+     —una pestaña de fondo, una ventana chica que después agrandás— el 3D no se
+     creaba nunca y ya no había forma de que apareciera. La portada sí se veía,
+     porque no mira el ancho. Ese era exactamente el síntoma: hero sí, marca y
+     pasillo no. */
   var lienzoRuedo = document.getElementById("ruedo");
   var hayRuedo = false;
-  if (lienzoRuedo && window.Ruedo && !menosMovimiento && !esChico &&
-      window.matchMedia("(min-width: 900px)").matches) {
+  var anchaParaMarca = window.matchMedia("(min-width: 900px)");
+
+  function encenderMarca() {
+    if (hayRuedo || !lienzoRuedo || !window.Ruedo) return;
+    if (menosMovimiento || !anchaParaMarca.matches) return;
     hayRuedo = window.Ruedo.init(lienzoRuedo);
     // sin WebGL vuelve el archivo plano: el CSS lo esconde salvo con .sin3d
     if (!hayRuedo) lienzoRuedo.parentNode.classList.add("sin3d");
   }
+  encenderMarca();
+  if (anchaParaMarca.addEventListener) {
+    anchaParaMarca.addEventListener("change", encenderMarca);
+  } else if (anchaParaMarca.addListener) {
+    anchaParaMarca.addListener(encenderMarca);   // Safari viejo
+  }
 
   /* ═══════ 05 · la sala caminada ═══════
      Se prende solo en pantalla grande, con WebGL y sin movimiento reducido.
-     En cualquier otro caso queda la grilla, que es lo que hay en el HTML. */
+     En cualquier otro caso queda la grilla, que es lo que hay en el HTML.
+     El init vive adentro del matchMedia de GSAP (más abajo), que vuelve a
+     correr si la ventana cruza el corte. */
   var seccionSala = document.querySelector(".recorrido");
   var lienzoSala = document.getElementById("sala");
   var haySala = false;
-  if (seccionSala && lienzoSala && window.Recorrido && !menosMovimiento && !esChico) {
+  var anchaParaSala = window.matchMedia("(min-width: 768px)");
+
+  var scrubSala = null;
+
+  function encenderSala() {
+    if (haySala) return true;
+    if (!seccionSala || !lienzoSala || !window.Recorrido) return false;
+    if (menosMovimiento || !anchaParaSala.matches) return false;
+
     haySala = window.Recorrido.init(lienzoSala);
-    if (haySala) seccionSala.classList.add("hay3d");
+    if (!haySala) return false;
+
+    seccionSala.classList.add("hay3d");
+    armarHud();
+    apagarLuzEnSala();
+    guiarUnaVez();
+
+    /* 05 · el recorrido — el scroll te camina por la sala.
+       Va contra un objeto intermedio para que el scrub suavice de verdad:
+       un ScrollTrigger pelado no interpola su propio progress. */
+    var paso = { p: 0 };
+    scrubSala = gsap.to(paso, {
+      p: 1, ease: "none",
+      scrollTrigger: {
+        trigger: seccionSala, start: "top top", end: "bottom bottom", scrub: 0.7
+      },
+      onUpdate: function () { window.Recorrido.progreso(paso.p); }
+    });
+    ScrollTrigger.refresh();
+    return true;
   }
 
   /* ── la grilla de obras: cada foto entra cuando está lista ──
@@ -599,21 +644,6 @@
     };
   });
 
-  /* 05 · el recorrido — el scroll te camina por la sala.
-     Va contra un objeto intermedio para que el scrub suavice de verdad:
-     un ScrollTrigger pelado no interpola su propio progress. */
-  mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", function () {
-    if (!haySala) return;
-    var paso = { p: 0 };
-    var tw = gsap.to(paso, {
-      p: 1, ease: "none",
-      scrollTrigger: {
-        trigger: seccionSala, start: "top top", end: "bottom bottom", scrub: 0.7
-      },
-      onUpdate: function () { window.Recorrido.progreso(paso.p); }
-    });
-    return function () { tw.scrollTrigger && tw.scrollTrigger.kill(); tw.kill(); };
-  });
 
   /* en celular no hay scrub: el volumen se deja en una pose armada y quieto */
   mm.add("(max-width: 767px)", function () {
@@ -627,7 +657,6 @@
      triggers miden sobre una página que no se va a estirar debajo. */
   armarVisor();
   mirarLaSala();
-  if (haySala) { armarHud(); apagarLuzEnSala(); guiarUnaVez(); }
   revelarTitulos();
   revelarBloques();
   contarCifras();
@@ -648,8 +677,23 @@
     });
   }
 
+  /* Las escenas 3D se prenden al cargar Y al agrandar la ventana.
+     Van por `resize` y no solo por el evento del media query, porque ese no
+     llega en todos los casos (pestaña en segundo plano, ventana sin pintar).
+     Las funciones se cortan solas si ya están prendidas, así que llamarlas
+     de más no cuesta nada. */
+  var reintento = null;
+  window.addEventListener("resize", function () {
+    if (hayRuedo && haySala) return;
+    clearTimeout(reintento);
+    reintento = setTimeout(function () { encenderMarca(); encenderSala(); }, 220);
+  });
+  encenderSala();
+
   /* las medidas cambian cuando terminan de cargar fuentes e imágenes */
-  window.addEventListener("load", function () { ScrollTrigger.refresh(); });
+  window.addEventListener("load", function () {
+    encenderMarca(); encenderSala(); ScrollTrigger.refresh();
+  });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   }

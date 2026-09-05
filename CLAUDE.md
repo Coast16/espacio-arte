@@ -202,6 +202,26 @@ que son las muestras antes de montarse— con sus rueditas, igual que el isotipo
 Los contornos usan `pathLength="1"` en el SVG, así el trazo mide 1 sea cual sea
 el tamaño en pantalla y `strokeDashoffset` va de 1 a 0 con el scroll.
 
+### Las escenas 3D se prenden por ancho, y hay que reintentarlo
+
+La marca (≥900 px) y el pasillo (≥768 px) no se crean en pantallas chicas: son
+contextos WebGL y no valen la batería de un teléfono. **Pero la comprobación no
+puede ser una sola vez al cargar.** Si la página carga en una ventana angosta
+—una pestaña en segundo plano, una ventana chica que después agrandás— el 3D no
+se crea nunca y ya no hay forma de que aparezca por más que agrandes.
+
+El síntoma es característico y conviene reconocerlo: **la portada sí se ve, la
+marca y el pasillo no.** La portada no mira el ancho; las otras dos sí.
+
+Por eso `encenderMarca()` y `encenderSala()` se llaman al cargar, en `load` y en
+`resize` (con un respiro de 220 ms). Las dos se cortan solas si ya están
+prendidas. Va por `resize` y no solo por el evento del media query porque ese no
+llega siempre.
+
+`encenderSala()` arma todo lo de la sala —el HUD, la linterna, la guía y el
+scrub—, en vez de estar repartido entre el arranque y un `mm.add`. Si se vuelve
+a partir, vuelve el bug.
+
 ### El lugar: una columna de relato y una marca plantada
 
 `.lugar` es una grilla de dos columnas de punta a punta:
