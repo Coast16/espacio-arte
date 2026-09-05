@@ -143,6 +143,19 @@ se note.
   se saca quitando la clase. Donde mejor se ve es en los cambios de claro a
   oscuro; entre dos bloques del mismo tono lo único que marca el borde es el
   filete.
+- **El relleno de los paneles va un pelo más oscuro que el fondo** (`CAL`,
+  `0xe9e6e0` contra `#F4F2ED`). Siendo exactamente el fondo, el panel no tenía
+  cuerpo: quedaba un alambre de **un píxel de dispositivo** sobre cal —las
+  líneas de WebGL no admiten grosor— y, una vez que el título se iba, no había
+  nada que mirar. Con este gris apenas sucio la cara se lee y el alambre la
+  dibuja. Sigue tapando lo de atrás, que es para lo que está.
+- **En el tramo b cada panel se abre HACIA SU PROPIO LADO** y el del medio, que
+  no tiene lado, sube. Antes iban alternados —dos a la izquierda y uno a la
+  derecha— y el conjunto se corría de a poco fuera de cuadro: la animación
+  terminaba con todo amontonado abajo a la izquierda.
+- **Ojo con cuánto inclinar el grupo.** El giro en X llegaba a 23° y, con la
+  perspectiva, hundía todo el conjunto fuera del centro mientras se armaba.
+  Ahora es la mitad, con una subida de `position.y` que lo compensa.
 - **La portada tiene dos tramos.** De 0 a 0,42 el logo se abre y se endereza;
   de 0,42 a 1 la cámara **entra y lo atraviesa**, con los paneles abriéndose
   para dejarla pasar. Por eso `.portada` mide 285vh y no 205vh. El segundo

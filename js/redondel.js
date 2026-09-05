@@ -17,7 +17,12 @@ window.Redondel = (function () {
   var LADO = 1.20;      // lado del panel
   var FONDO = 0.34;     // profundidad de la caja
   var TINTA = 0x101216;   // el alambre
-  var CAL = 0xf4f2ed;     // el relleno opaco: tiene que ser el fondo de la página
+  /* El relleno tapa lo que hay detrás, pero UN PELO más oscuro que el fondo.
+     Siendo exactamente #F4F2ED los paneles no tenían cuerpo: quedaba un
+     alambre de un píxel de dispositivo sobre cal, casi invisible, y una vez
+     que el título se iba no quedaba nada que mirar. Con este gris apenas
+     sucio la cara del panel se lee y el alambre la dibuja. */
+  var CAL = 0xe9e6e0;
 
   /* ── polvo ──────────────────────────────────────────────
      Se emite por distancia recorrida, no por tiempo: un barrido
@@ -277,18 +282,21 @@ window.Redondel = (function () {
       // al separarse en profundidad los paneles se enderezan: de logo isométrico
       // a pasillo de sala, que es lo que son en la plaza
       var lateral = 1 - a * 0.62;
-      /* En el segundo tramo se corren a un lado y otro, alternados, y se
-         separan en profundidad: queda un pasillo con el eje libre. Antes
-         los multiplicaba a todos por igual y el del medio se quedaba en
-         x=0, justo donde pasa la cámara: la atravesaba de lleno. */
-      var ladoB = i % 2 === 0 ? -1 : 1;
+      /* En el segundo tramo se abren para dejar pasar la cámara.
+         Cada panel se va HACIA SU PROPIO LADO y el del medio, que no tiene
+         lado, sube. Antes iban alternados —dos a la izquierda y uno a la
+         derecha— y el conjunto se corría de a poco fuera de cuadro: la
+         animación terminaba con todo amontonado abajo a la izquierda. */
       /* 1,15 de corrimiento alcanza para que la cámara pase limpia (el panel
          mide 1,2, así que le quedan 0,55 de luz). Con más, se van de cuadro
          mucho antes de que la cámara los alcance y el final queda vacío. */
       var largo = 1 + entra * 1.2;
+      /* 0,95 y no 1,5: abriendo tanto, sobre el final los paneles quedaban
+         del todo fuera de cuadro y el último tramo del scroll era una
+         pantalla vacía. Así rozan los bordes mientras la cámara los pasa. */
       nodo.position.set(
-        d * 0.44 * lateral + ladoB * entra * 1.15,
-        -d * 0.34 * lateral,
+        d * 0.44 * lateral + d * entra * 0.95,
+        -d * 0.34 * lateral + (d === 0 ? entra * 0.78 : 0),
         d * sep * 1.5 * largo
       );
       var op = Math.max(0, Math.min(1, (a - 0.1) / 0.4)) * armado;
@@ -298,18 +306,21 @@ window.Redondel = (function () {
       nodo.userData.rueda.opacity = armado * (0.30 + a * 0.50) * (1 - entra);
     });
 
-    grupo.position.y = -0.12;
+    /* El conjunto se iba hundiendo hacia abajo mientras se armaba: el giro
+       en X lo inclinaba 23° y, con la perspectiva, todo el grupo se corría
+       fuera del centro. Menos inclinación y una subida que la compensa. */
+    grupo.position.y = -0.12 + a * 0.26;
     grupo.rotation.y = -0.62 + a * 0.72 - entra * 0.10 + estado.objX;
-    grupo.rotation.x = 0.10 + a * 0.30 - entra * 0.36 + estado.objY;
+    grupo.rotation.x = 0.10 + a * 0.14 - entra * 0.20 + estado.objY;
 
     // primero un travelling corto de acercamiento; después la cámara cruza
-    /* Cuánto viaja la cámara define dónde termina el vuelo, y eso hay que
-       medirlo, no calcularlo: los paneles se van de cuadro POR LOS COSTADOS
-       bastante antes de que la cámara llegue a su profundidad, porque de
-       cerca el encuadre se angosta. Con 10,9 el último salía sobre p≈0,88 y
-       el resto de la sección quedaba en blanco —que es justo lo que Mathias
-       marcó—. Con 7,7 el vuelo llega hasta p≈0,97. */
-    var cz = 7.4 - a * 1.1 - entra * 7.7;     // 7,4 → 6,3 → -1,4
+    /* Cuánto viaja la cámara define dónde termina el vuelo, y hay que
+       medirlo, no calcularlo: de cerca el encuadre se angosta y los paneles
+       se van por los costados bastante antes de que la cámara llegue a su
+       profundidad. Con 7,7 la cámara los pasaba a todos y el final quedaba
+       en una pantalla vacía. Con 6,9 frena entre el panel del medio y el
+       último, que queda grande en cuadro mientras el canvas se funde. */
+    var cz = 7.4 - a * 1.1 - entra * 6.9;     // 7,4 → 6,3 → -0,6
     camera.position.z = cz;
     /* al entrar deja de mirar el centro y mira hacia adelante: si siguiera
        apuntando al origen, al pasarlo la escena se daría vuelta de golpe */
