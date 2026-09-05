@@ -14,17 +14,26 @@ seguir abriéndose con un solo comando.
 |---|---|
 | Repo | https://github.com/Coast16/espacio-arte (público) |
 | Vercel | proyecto `espacio-arte-web`, cuenta de Mathias |
-| Producción | `espacio-arte-iyyvrirvs-mathiaspaullier27-2739s-projects.vercel.app` |
+| **Sitio** | **https://espacio-arte-web.vercel.app** |
 
-Ojo con dos cosas del despliegue:
+**Publicar una versión nueva:**
 
-- **El sitio está detrás de la protección de despliegue de Vercel.** Todo
-  responde 302 hacia el SSO: lo ve Mathias con su sesión y nadie más. Se
-  apaga en *Settings → Deployment Protection → Vercel Authentication →
-  Disabled*. Mientras esté prendida, no tiene sentido pasarle el link a nadie.
-- **No hay despliegue automático al pushear.** Vercel no puede enlazar el repo
-  porque la cuenta no tiene conectado GitHub como método de login. Hasta que
-  se conecte, cada versión sale con `vercel --prod` desde esta carpeta.
+```bash
+cd ~/Desktop/espacio-arte-web && vercel --prod
+```
+
+Hay que correrlo **desde esta carpeta**. Vercel se guía por el `.vercel/` del
+directorio actual, así que desde otro lado publica otro proyecto — ya pasó una
+vez y creó un proyecto de más en la cuenta.
+
+**No hay despliegue automático al pushear.** `vercel git connect` falla porque
+la cuenta de Vercel no tiene GitHub conectado como método de login. Se arregla
+desde el panel de Vercel; hasta entonces, el push a GitHub y el despliegue son
+dos pasos separados.
+
+La URL de producción es pública. Ojo que las URLs de cada despliegue puntual
+(las largas, con el hash) **sí** están detrás del SSO de Vercel: para pasarle
+el link a alguien, usar siempre la corta.
 
 `.vercelignore` deja afuera `serve.py`, `CLAUDE.md`, `.claude/` y `_capturas/`:
 son herramientas y notas, no tienen por qué servirse desde el sitio.
