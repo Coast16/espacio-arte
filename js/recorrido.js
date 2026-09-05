@@ -15,7 +15,11 @@ window.Recorrido = (function () {
   "use strict";
 
   var RADIO = 55;        // radio del arco que camina la cámara
-  var SEP = 3.6;         // arco entre obra y obra
+  /* Las obras estaban lejos, chicas y desteñidas: se veían como fotitos
+     flotando en niebla, no como una sala que estás caminando. Los números de
+     acá abajo son los que arreglan eso — se ajustan mirando una hoja de
+     contactos del pasillo, nunca a ojo. */
+  var SEP = 3.3;         // arco entre obra y obra
   var ENTRADA = 6;       // tramo oscuro antes de la primera obra
   var FRENTE = 3.0;      // a esta distancia queda la última obra al terminar
   var TECHO = 3.9;       // de acá cuelgan: la estructura
@@ -73,7 +77,11 @@ window.Recorrido = (function () {
   var LARGO = ENTRADA + (OBRAS.length - 1) * SEP - FRENTE;
 
   var A_LA_VEZ = 2;      // texturas pidiéndose al mismo tiempo
-  var NIEBLA = [7, 32];  // cerca y lejos de la niebla en el tramo normal
+  /* La niebla es del color del fondo, así que TODO lo que agarra se va a
+     blanco. Con 7/32 las obras perdían color a los pocos metros y el pasillo
+     entero quedaba lavado. Abriéndola, la obra se lee entera hasta que la
+     pasás y recién ahí se disuelve. */
+  var NIEBLA = [11, 44];
 
   var renderer, scene, camera, lienzo, contenedor, ro, io, cargador;
   var obras = [], rayo, ndc, tocables = [];
@@ -108,13 +116,19 @@ window.Recorrido = (function () {
     // apaisadas más anchas, verticales más altas: el alto manda
     var ultima = i === OBRAS.length - 1;
     var vertical = datos.h > datos.w;
-    var alto = ultima ? 3.1 : (vertical ? 2.5 : 1.95);
+    // más grandes: a esta distancia una obra de 1,95 no llena el cuadro y
+    // el centro de la pantalla queda siempre vacío
+    var alto = ultima ? 3.3 : (vertical ? 2.95 : 2.3);
     var ancho = alto * (datos.w / datos.h);
 
     var nodo = new THREE.Group();
     var pos = new THREE.Vector3();
     enArco(s, pos);
-    var separacion = ultima ? 0 : 2.45 + (vertical ? 0.15 : 0) + (i % 3) * 0.22;
+    /* Más cerca del camino. Las obras miran al pasillo, así que su ancho
+       corre a lo largo y no de costado: acá el número es la distancia real a
+       la que le pasás por delante. A 1,75 te rozan; a 2,45 quedaban en el
+       borde del cuadro y el medio siempre vacío. */
+    var separacion = ultima ? 0 : 1.75 + (vertical ? 0.12 : 0) + (i % 3) * 0.18;
     var y = ultima ? 0.35 : (i % 4) * 0.17 - 0.18;
     nodo.position.set(
       pos.x + Math.cos(th) * lado * separacion,
@@ -169,7 +183,7 @@ window.Recorrido = (function () {
       }
       var g = guardar(new THREE.BufferGeometry().setFromPoints(pts));
       scene.add(new THREE.Line(g, guardar(new THREE.LineBasicMaterial({
-        color: TINTA, transparent: true, opacity: k ? 0.12 : 0.17
+        color: TINTA, transparent: true, opacity: k ? 0.24 : 0.34
       }))));
     });
   }
@@ -276,9 +290,14 @@ window.Recorrido = (function () {
     /* el último tramo se llena de cal: la niebla se cierra encima tuyo y
        el pasillo se disuelve en el mismo blanco que tiene la página, así
        la salida hacia la sección siguiente no es un corte */
-    var salida = s > LARGO * 0.9 ? clamp(0, 1, (s / LARGO - 0.9) / 0.1) : 0;
-    scene.fog.near = NIEBLA[0] - salida * (NIEBLA[0] - 0.4);
-    scene.fog.far = NIEBLA[1] - salida * (NIEBLA[1] - 4.5);
+    // el cierre arranca más tarde: antes la última obra se lavaba entera y
+    // el recorrido terminaba en una foto blanqueada, que parece un error
+    var salida = s > LARGO * 0.95 ? clamp(0, 1, (s / LARGO - 0.95) / 0.05) : 0;
+    /* El cierre es una neblina, no un blanqueo. Cerrando hasta 0,4/4,5 la
+       última obra —que te queda enfrente— se iba a blanco y el recorrido
+       terminaba en una mancha: parecía un error de render, no un final. */
+    scene.fog.near = NIEBLA[0] - salida * (NIEBLA[0] - 4.5);
+    scene.fog.far = NIEBLA[1] - salida * (NIEBLA[1] - 17);
 
     atenderCola();
     renderer.render(scene, camera);
@@ -396,6 +415,11 @@ window.Recorrido = (function () {
     despertar();
   }
 
+  /* Fuerza un cuadro. Igual que en redondel.js y ruedo.js: es para la captura
+     de desarrollo, porque con la pestaña oculta no hay rAF y el bucle no
+     avanza. `esperar` da tiempo a que entren las texturas de la cola. */
+  function paso() { if (renderer) { atenderCola(); pintar(1 / 60); } }
+
   function destruir() {
     if (pedido) cancelAnimationFrame(pedido);
     pedido = null;
@@ -414,7 +438,7 @@ window.Recorrido = (function () {
   }
 
   return {
-    init: init, progreso: progreso, destruir: destruir,
+    init: init, progreso: progreso, paso: paso, destruir: destruir,
     obras: OBRAS, ruta: RUTA,
     set alClic(f) { api.alClic = f; },
     /* init() ya pintó un cuadro antes de que el cartel existiera y dejó

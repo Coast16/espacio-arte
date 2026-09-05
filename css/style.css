@@ -228,8 +228,14 @@ a{color:inherit;text-decoration:none}
     row-gap:clamp(56px,7vw,104px);
   }
   .lugar-cuerpo{grid-column:1;grid-row:1}
-  /* centrada contra toda la columna de texto, no pegada arriba */
-  .lugar-marca-hueco{grid-column:2;grid-row:1;align-self:center}
+  /* Centrada contra la columna de texto, pero levantada.
+     El margen de abajo es el que la sube: con align-self:center, el navegador
+     centra la caja MÁS su margen, así que media altura de ese margen es lo
+     que sube la marca. Se ajusta ahí, sin tocar posicionamiento. */
+  .lugar-marca-hueco{
+    grid-column:2;grid-row:1;align-self:center;
+    margin-bottom:clamp(90px,15vw,240px);
+  }
   .cifras{grid-column:1 / -1;grid-row:2}
 }
 

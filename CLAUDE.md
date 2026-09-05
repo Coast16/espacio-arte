@@ -377,6 +377,20 @@ lleva la cámara por un **arco de radio 55**, no por una recta: adentro del
 redondel no hay rectas. La niebla arranca en 6,5 y termina en 30, así que las
 piezas se materializan desde el negro a medida que te acercás.
 
+- **Las medidas del pasillo se ajustan mirando, no a ojo.** `Recorrido.paso()`
+  fuerza un cuadro para poder sacar una hoja de contactos (ver *Ver una
+  animación sin poder mirarla*). Sin eso el pasillo estuvo mucho tiempo sin
+  que nadie lo viera de verdad, y arrastraba tres problemas juntos: las obras
+  colgaban a 2,45 del camino y quedaban en el borde del cuadro con el medio
+  siempre vacío; eran chicas (1,95 de alto); y la niebla cerraba a los 32, así
+  que perdían color a los pocos metros. Se veía como fotitos flotando en
+  blanco, no como una sala. Los números que lo arreglan —`SEP`, `separacion`,
+  `alto`, `NIEBLA`— están arriba del módulo. **Si los tocás, sacá una hoja de
+  contactos antes y después.**
+- **El cierre es una neblina, no un blanqueo.** Cerrando la niebla hasta
+  0,4/4,5 la última obra —que te queda enfrente— se iba a blanco y el
+  recorrido terminaba en una mancha, que parece un error de render. Ahora
+  cierra a 4,5/17 y recién sobre el 95 %.
 - **Las texturas se piden por cercanía** (a menos de 26 unidades) y **entran en
   fila de a dos**, siempre la más cercana primero. Esto importa: antes se
   pedían las siete que estuvieran en rango y el navegador decodificaba siete
