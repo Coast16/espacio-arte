@@ -8,6 +8,32 @@ La dueña del proyecto es Laura Brum. No programa. Explicá los cambios en
 lenguaje llano y no metas toolchains salvo que los pida. El sitio tiene que
 seguir abriéndose con un solo comando.
 
+## Dónde vive
+
+| | |
+|---|---|
+| Repo | https://github.com/Coast16/espacio-arte (público) |
+| Vercel | proyecto `espacio-arte-web`, cuenta de Mathias |
+| Producción | `espacio-arte-iyyvrirvs-mathiaspaullier27-2739s-projects.vercel.app` |
+
+Ojo con dos cosas del despliegue:
+
+- **El sitio está detrás de la protección de despliegue de Vercel.** Todo
+  responde 302 hacia el SSO: lo ve Mathias con su sesión y nadie más. Se
+  apaga en *Settings → Deployment Protection → Vercel Authentication →
+  Disabled*. Mientras esté prendida, no tiene sentido pasarle el link a nadie.
+- **No hay despliegue automático al pushear.** Vercel no puede enlazar el repo
+  porque la cuenta no tiene conectado GitHub como método de login. Hasta que
+  se conecte, cada versión sale con `vercel --prod` desde esta carpeta.
+
+`.vercelignore` deja afuera `serve.py`, `CLAUDE.md`, `.claude/` y `_capturas/`:
+son herramientas y notas, no tienen por qué servirse desde el sitio.
+
+**La tipografía Noah se publica con el sitio**, con licencia de escritorio y no
+web. Fue decisión de Mathias, sabiendo el riesgo. Si aparece un reclamo de
+Fontfabric, la salida rápida es borrar el `@font-face` de `style.css`: los
+titulares caen a Instrument Sans y no se rompe nada.
+
 ## Levantar el proyecto
 
 ```bash
