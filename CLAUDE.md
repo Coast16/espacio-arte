@@ -479,6 +479,30 @@ invisible sin un solo error. Pasó con las 29 fotos de `.sala-grilla`. La forma
 segura es envolver la regla base en `@media (prefers-reduced-motion:
 no-preference)`, que no depende del orden.
 
+## Lo que se revisó antes de entregar
+
+Chequeos que ya pasaron y que conviene volver a correr si se toca algo:
+
+| qué | cómo quedó |
+|---|---|
+| Contraste del texto secundario (`--humo`, 11 px) | 5,15:1 — estaba en 4,31 y no llegaba |
+| Blancos de toque | ≥44 px en todo lo que se toca con el dedo |
+| Desbordes horizontales | ninguno, recorriendo la página entera en 11 posiciones |
+| Imágenes rotas | ninguna |
+| Jerarquía de encabezados | H1 → H2 → H3, sin saltos |
+| Contextos 3D | los tres vivos en escritorio, ninguno en celular |
+| Peso inicial en celular | 310 KB en 18 pedidos |
+| Grilla de obras en celular | 2,3 MB con `srcset` — eran 5,2 MB |
+
+**Las metaetiquetas para compartir usan URL absoluta.** Con una ruta relativa,
+Instagram y WhatsApp no muestran la imagen, y de ahí viene casi todo el
+tráfico. Si el dominio cambia, hay que actualizar `og:image` y `og:url`.
+
+**Sabido y aceptado:** las palabras todavía apagadas de las declaraciones
+quedan en 1,7:1 mientras no las alcanzaste con el scroll. Es el efecto y está
+buscado; el tramo de encendido termina antes de que el bloque llegue al centro
+de la pantalla, así que lo que estás leyendo siempre está a contraste pleno.
+
 ## Verificar cambios
 
 **Lenis maneja el scroll.** `window.scrollTo()` mueve el DOM pero no le avisa a

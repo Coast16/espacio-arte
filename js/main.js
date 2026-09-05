@@ -321,7 +321,11 @@
     if (cols) encender(cols, ".manifiesto", "top 62%", "bottom 78%", 1.1);
     // las declaraciones del lugar: cada una se enciende en su propio tramo
     gsap.utils.toArray("[data-encender]").forEach(function (el) {
-      encender(el, null, "top 90%", "bottom 40%", 0.9);
+      /* Termina de encenderse antes: con "bottom 40%" las últimas palabras
+         se prendían muy tarde y, si parabas de scrollear a media lectura,
+         parte del párrafo quedaba en gris claro. Así, cuando el bloque llega
+         al centro de la pantalla ya está entero legible. */
+      encender(el, null, "top 92%", "bottom 62%", 0.9);
     });
   }
 

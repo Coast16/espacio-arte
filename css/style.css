@@ -17,7 +17,7 @@
   --fondo:#F4F2ED;
   --realce:#FCFBF8;
   --tinta:#101216;
-  --humo:#6E727A;
+  --humo:#62666E;   /* 4,9:1 sobre cal — con #6E727A daba 4,31 y el eyebrow va en 11 px */
   --linea:rgba(16,18,22,.16);
   --linea-fuerte:rgba(16,18,22,.34);
   --velo:244,242,237;          /* para los degradados sobre foto */
@@ -106,7 +106,8 @@ a{color:inherit;text-decoration:none}
   pointer-events:none;
 }
 .barra > *{pointer-events:auto}
-.barra-logo{display:flex;align-items:center;gap:11px}
+/* 44 px de alto: es un enlace y en el teléfono hay que poder tocarlo */
+.barra-logo{display:flex;align-items:center;gap:11px;min-height:44px}
 /* el isotipo se recorta por CSS del lockup horizontal: evita un archivo más */
 .isotipo{
   display:block;width:33px;height:35px;overflow:hidden;flex:none;
@@ -128,7 +129,11 @@ a{color:inherit;text-decoration:none}
   margin-left:auto;display:flex;gap:22px;
   font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
 }
-.barra-nav a{color:var(--humo);transition:color var(--t-toque) var(--ease-salida)}
+/* el enlace medía 12 px de alto: se ve igual, pero ahora se puede pegar */
+.barra-nav a{
+  color:var(--humo);padding-block:10px;
+  transition:color var(--t-toque) var(--ease-salida);
+}
 .barra-nav a:hover{color:var(--tinta)}
 
 /* progreso: la planta del redondel */
@@ -470,6 +475,9 @@ a{color:inherit;text-decoration:none}
 }
 .dato dd{margin:0}
 .dato a{
+  /* inline-block con alto mínimo: en línea medían 21 px de alto y son lo
+     único que la página pide hacer, con tráfico que llega de Instagram */
+  display:inline-block;min-height:44px;padding-top:10px;margin-top:-10px;
   border-bottom:1px solid var(--linea-fuerte);
   transition:border-color var(--t-toque) var(--ease-salida),
              opacity var(--t-toque) var(--ease-salida);
