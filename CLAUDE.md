@@ -621,8 +621,34 @@ perímetro. **La geometría no está dibujada a ojo**: sale de las mismas tablas
 en coordenadas polares— pasadas a arcos SVG. Si algún día hay que retocarla,
 se regenera desde esas tablas, no se toca el `d=` a mano.
 
-Dos trampas que ya costaron una vuelta:
+Las cuñas van **macizas**, como en el logo. Dibujadas como contorno se leían
+igual que los anillos y la marca perdía lo único que la hace reconocible de
+lejos.
 
+### Se arma en dos gestos, no en veintiséis
+
+1. Los anillos se trazan **de adentro hacia afuera**, un anillo por paso: los
+   tramos de un mismo radio arrancan juntos, así que son seis pasos y no
+   dieciocho.
+2. Recién ahí se enciende el **abanico** de cuñas, una atrás de otra, girando
+   apenas hasta su lugar.
+
+Antes cada uno de los veintiséis paths salía por su cuenta con 30 ms de
+diferencia, y el conjunto se leía como un garabato: veintiséis líneas
+creciendo a la vez en un orden que no significaba nada.
+
+Arranca a 1,5 s, que es cuando las hojas del umbral ya se están abriendo: la
+marca se está armando cuando la ves aparecer, no dos segundos después. Es CSS
+puro y no depende del JS.
+
+### Tres trampas que ya costaron una vuelta cada una
+
+- **El viewBox tiene que arrancar en `0 0`, no en `-1.06 -1.06`.** Con el
+  viewBox centrado en el origen, Chrome resolvía el `transform-origin: 50% 50%`
+  como coordenada absoluta de usuario y el giro quedaba anclado a la esquina:
+  **la marca orbitaba**, corriéndose fuera de pantalla a lo largo de los 120 s
+  de la vuelta. Eso fue lo que se vio raro en la primera entrega de celular.
+  Si se regenera el SVG, el centro tiene que seguir cayendo en `1.06 1.06`.
 - **Nada de `vector-effect: non-scaling-stroke`.** Con eso el punteado del
   trazado se calcula en píxeles de pantalla: `stroke-dasharray: 1` pasa a ser
   una rayita de 1 px y el dibujo entero sale punteado en vez de con líneas
@@ -631,8 +657,12 @@ Dos trampas que ya costaron una vuelta:
   scroll le anima la escala y se lo comería. Va en el flujo, dentro del
   `flex` de `.portada-pin`.
 
-El trazado arranca a los 2 s por CSS puro, sin depender del JS: el umbral dura
-1,85 s y no tiene sentido dibujar abajo de la cortina.
+### La salida está orquestada
+
+Primero se va el texto y la marca queda sola un momento; después se agranda
+apenas (1,22) y se apaga. Escalarla 1,6 con las dos cosas saliendo a la vez la
+sacaba por el borde de arriba mientras el texto subía: el mismo gesto a dos
+velocidades se leía como un revoltijo.
 
 ### El pasillo, caminado con el dedo
 

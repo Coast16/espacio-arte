@@ -934,9 +934,16 @@
         trigger: ".portada", start: "top top", end: "bottom bottom", scrub: 0.6
       }
     });
-    linea.to(".portada-texto", { yPercent: -30, autoAlpha: 0, ease: "none" }, 0)
-         .to(".planta", { scale: 1.6, opacity: 0, ease: "none" }, 0)
-         .to(".pista", { autoAlpha: 0, ease: "none", duration: 0.22 }, 0);
+    /* Orquestado, no todo junto: primero se va el texto y la marca queda
+       sola un momento; después se agranda apenas y se apaga. Escalar la
+       planta 1,6 la sacaba por el borde de arriba mientras el texto subía,
+       y las dos cosas haciendo el mismo gesto a distinta velocidad se leían
+       como un revoltijo. */
+    linea.to(".pista", { autoAlpha: 0, ease: "none", duration: 0.12 }, 0)
+         .to(".portada-texto", { yPercent: -16, autoAlpha: 0, ease: "none",
+                                 duration: 0.62 }, 0)
+         .to(".planta", { scale: 1.22, opacity: 0, ease: "none",
+                          duration: 0.72 }, 0.28);
 
     return function () {
       linea.scrollTrigger && linea.scrollTrigger.kill();
