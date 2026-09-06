@@ -8,7 +8,8 @@
 
   var menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var punteroFino = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  var esChico = window.matchMedia("(max-width: 767px)").matches;
+  var mmChico = window.matchMedia("(max-width: 767px)");
+  var esChico = mmChico.matches;
   var hayGsap = !!(window.gsap && window.ScrollTrigger);
   var clamp = function (min, max, v) { return v < min ? min : v > max ? max : v; };
 
@@ -216,6 +217,14 @@
     });
   })();
 
+  /* Las tres piezas de celular van ANTES del corte por GSAP: ninguna lo
+     necesita —el riel scrollea con el navegador y el índice es una clase—
+     y si quedaran del otro lado, una caída de la CDN dejaría el botón del
+     índice puesto en pantalla pero muerto al tacto. */
+  barraQueSeAparta();
+  armarIndice();
+  armarPasillo();
+
   /* ═══════ sin GSAP no hay show, pero la página se lee igual ═══════ */
   if (!hayGsap) return;
 
@@ -248,6 +257,10 @@
 
     gsap.utils.toArray("[data-revelar-grupo]").forEach(function (grupo) {
       if (!grupo.offsetParent) return;   // la grilla de respaldo está oculta
+      /* En el teléfono la grilla es el riel del pasillo: su profundidad la
+         pinta armarPasillo() cuadro a cuadro. Si además entrara por acá,
+         los dos estarían escribiendo el mismo transform. */
+      if (mmChico.matches && grupo.classList.contains("sala-grilla")) return;
       gsap.from(grupo.querySelectorAll("[data-revelar-item]"), {
         y: 26, autoAlpha: 0, duration: 0.9, ease: "power4.out", stagger: 0.06,
         scrollTrigger: { trigger: grupo, start: "top 84%", once: true }
@@ -616,6 +629,268 @@
     });
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     CELULAR
+     Tres piezas, y ninguna toca la versión de escritorio: la barra que se
+     aparta, el índice, y el pasillo caminado con el dedo. Las tres miran
+     el mismo media query, así que al girar el teléfono a un ancho grande
+     se apagan solas.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── la barra se aparta al bajar y vuelve al subir ──
+     La página mide nueve mil píxeles y la barra le pasaba por encima al
+     texto todo el rato. El umbral de 9 px es para que el rebote del scroll
+     no la haga titilar. */
+  function barraQueSeAparta() {
+    if (!barra || menosMovimiento) return;
+    var ultimo = window.scrollY;
+
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY;
+      var dy = y - ultimo;
+      if (!mmChico.matches || barra.classList.contains("fija")) {
+        barra.classList.remove("escondida");
+        ultimo = y;
+        return;
+      }
+      if (Math.abs(dy) < 9) return;
+      barra.classList.toggle("escondida", dy > 0 && y > 150);
+      ultimo = y;
+    }, { passive: true });
+  }
+
+  /* ── el índice ── */
+  function armarIndice() {
+    var boton = document.getElementById("barraMenu");
+    var hoja = document.getElementById("indice-hoja");
+    if (!boton || !hoja || !barra) return;
+    var abierto = false;
+    var cierre = null;
+
+    function abrir() {
+      if (abierto) return;
+      abierto = true;
+      clearTimeout(cierre);
+      hoja.hidden = false;
+      boton.setAttribute("aria-expanded", "true");
+      barra.classList.add("fija");
+      barra.classList.remove("escondida");
+      document.documentElement.style.overflow = "hidden";
+      if (lenis) lenis.stop();
+      /* Fundido de entrada. El reflow forzado es lo que hace que el
+         navegador tome opacidad 0 como estado de partida; con
+         requestAnimationFrame también anda, pero si la pestaña está en
+         segundo plano el cuadro no llega y la hoja queda a medio abrir. */
+      void hoja.offsetHeight;
+      hoja.classList.add("abierta");
+      // la hoja es un bloque oscuro a pantalla completa: la barra se da vuelta
+      barraSegunFondo();
+    }
+
+    function cerrar() {
+      if (!abierto) return;
+      abierto = false;
+      hoja.classList.remove("abierta");
+      boton.setAttribute("aria-expanded", "false");
+      barra.classList.remove("fija");
+      document.documentElement.style.overflow = "";
+      if (lenis) lenis.start();
+      cierre = setTimeout(function () {
+        if (abierto) return;
+        hoja.hidden = true;
+        barraSegunFondo();
+      }, 300);
+    }
+
+    boton.addEventListener("click", function () {
+      if (abierto) { cerrar(); boton.focus(); } else { abrir(); }
+    });
+
+    /* En CAPTURA, a propósito. El salto a un ancla lo maneja un listener
+       puesto sobre cada <a> allá arriba, y ese correría ANTES que uno
+       normal acá: le pediría el salto a Lenis mientras Lenis está parado
+       por la hoja abierta, y el salto se pierde. Atajándolo en captura,
+       primero se cierra —que es lo que vuelve a soltar el scroll— y recién
+       después se pide el viaje. */
+    hoja.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a");
+      if (!a) return;
+      var href = a.getAttribute("href") || "";
+      if (href.charAt(0) !== "#") { cerrar(); return; }   // Instagram, entradas
+      e.preventDefault();
+      e.stopPropagation();
+      var destino = document.querySelector(href);
+      cerrar();
+      if (!destino) return;
+      requestAnimationFrame(function () {
+        if (lenis) lenis.scrollTo(destino, { offset: -8 });
+        else destino.scrollIntoView({ behavior: menosMovimiento ? "auto" : "smooth" });
+      });
+    }, true);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && abierto) { cerrar(); boton.focus(); }
+    });
+    if (mmChico.addEventListener) {
+      mmChico.addEventListener("change", function (e) { if (!e.matches) cerrar(); });
+    }
+  }
+
+  /* ── el pasillo, caminado con el dedo ──
+     Es la MISMA grilla de obras del HTML: el CSS la vuelve un riel
+     horizontal imantado y esto le agrega la cuenta, el avance y la
+     profundidad. El scroll lo hace el navegador, así que la inercia es la
+     del sistema: no hay nada acá que pueda trabarse ni ir a destiempo. */
+  function armarPasillo() {
+    var riel = document.querySelector(".sala-grilla");
+    var paso = document.querySelector(".sala-paso");
+    if (!riel || !paso) return;
+
+    var obras = Array.prototype.slice.call(riel.querySelectorAll(".sala-obra"));
+    if (!obras.length) return;
+    var numero = document.getElementById("salaPasoN");
+    var total = document.getElementById("salaPasoTot");
+    var avance = document.getElementById("salaPasoRiel");
+    var dos = function (n) { return n < 10 ? "0" + n : String(n); };
+    if (total) total.textContent = dos(obras.length);
+
+    var pedido = false;
+    var andando = false;
+    var ultimoN = -1;
+    var cerca = false;   // ¿el pasillo ya está por entrar en pantalla?
+
+    function pintar() {
+      pedido = false;
+      if (!mmChico.matches) return;
+
+      var caja = riel.getBoundingClientRect();
+      var largo = riel.scrollWidth - riel.clientWidth;
+      var p = largo > 8 ? riel.scrollLeft / largo : 0;
+      if (avance) avance.style.transform = "scaleX(" + p.toFixed(4) + ")";
+
+      // el ancla es el borde por donde imanta, no el centro
+      var ancla = caja.left + 20;
+      var actual = 0, dCerca = Infinity;
+
+      for (var i = 0; i < obras.length; i++) {
+        var o = obras[i];
+        var r = o.getBoundingClientRect();
+        var d = r.left - ancla;
+        if (Math.abs(d) < dCerca) { dCerca = Math.abs(d); actual = i; }
+        // lo que está lejos de la ventana no se toca: son 29 fotos
+        if (r.right < caja.left - 40 || r.left > caja.right + 40) continue;
+        if (menosMovimiento) continue;   // la profundidad es movimiento
+        var k = Math.min(Math.abs(d) / (r.width || 1), 1);
+        o.style.transform = "scale(" + (1 - k * 0.035).toFixed(4) + ")";
+        o.style.opacity = (1 - k * 0.38).toFixed(3);
+      }
+
+      if (actual !== ultimoN) {
+        ultimoN = actual;
+        if (numero) numero.textContent = dos(actual + 1);
+        adelantar(actual);
+      }
+    }
+
+    /* Las 29 fotos van en lazy: bajarlas todas de una son 3,5 MB. Pero en un
+       riel el lazy llega tarde —la foto empieza a pedirse recién cuando ya
+       la estás mirando— y se camina contra tarjetas en blanco. Esto le saca
+       el lazy a las cuatro que vienen: siempre hay cuatro pasos cargados
+       adelante y nunca se piden las 29. */
+    function adelantar(desde) {
+      // hasta que el pasillo no esté cerca, ninguna: son 5.800 px más abajo
+      if (!cerca) return;
+      for (var j = desde; j < Math.min(desde + 4, obras.length); j++) {
+        var im = obras[j].querySelector("img");
+        if (im && im.getAttribute("loading") === "lazy") {
+          im.setAttribute("loading", "eager");
+        }
+      }
+    }
+
+    function alRodar() {
+      // si ya lo estás deslizando, claramente el pasillo está en pantalla:
+      // esto es la red por si el observador no llegara a avisar
+      cerca = true;
+      if (!pedido) { pedido = true; requestAnimationFrame(pintar); }
+      if (!andando && riel.scrollLeft > 6) {
+        andando = true;
+        paso.classList.add("andando");
+      }
+    }
+
+    riel.addEventListener("scroll", alRodar, { passive: true });
+    window.addEventListener("resize", function () {
+      if (!mmChico.matches) {
+        for (var i = 0; i < obras.length; i++) {
+          obras[i].style.transform = "";
+          obras[i].style.opacity = "";
+        }
+        return;
+      }
+      alRodar();
+    });
+
+    /* La obra se toca y se ve grande. La figure no es un botón, así que
+       hay que decirle al teclado y al lector de pantalla que se puede. */
+    function mirar(fig) {
+      if (!abrirVisor) return;
+      var img = fig.querySelector("img");
+      if (!img) return;
+      var b = fig.querySelector("b"), t = fig.querySelector("span");
+      abrirVisor(img.currentSrc || img.src,
+                 b ? b.textContent : "", t ? t.textContent : "", img.alt);
+    }
+    obras.forEach(function (fig) {
+      var t = fig.querySelector("span");
+      fig.setAttribute("role", "button");
+      fig.setAttribute("tabindex", "0");
+      fig.setAttribute("aria-label", "Ver en grande: " + (t ? t.textContent : "la obra"));
+      fig.addEventListener("click", function () {
+        if (mmChico.matches) mirar(fig);
+      });
+      fig.addEventListener("keydown", function (e) {
+        if (!mmChico.matches) return;
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mirar(fig); }
+      });
+    });
+
+    if ("IntersectionObserver" in window) {
+      /* Las fotos se piden recién cuando el pasillo se está acercando. Sin
+         esto, la carga inicial se llevaba medio mega en cuatro fotos que
+         están a 5.800 px de donde arranca la página. */
+      new IntersectionObserver(function (e, obs) {
+        if (!e[0].isIntersecting) return;
+        obs.disconnect();
+        cerca = true;
+        adelantar(ultimoN < 0 ? 0 : ultimoN);
+      }, { rootMargin: "700px 0px" }).observe(riel);
+
+      /* El primer empujón: al llegar el pasillo a la ventana el riel se
+         corre un dedo solo. El imantado lo devuelve a su lugar sin que haya
+         que animar nada a mano, y con eso ya se entiende que se desliza. */
+      if (!menosMovimiento) {
+        var mirando = new IntersectionObserver(function (e, obs) {
+          if (!e[0].isIntersecting) return;
+          obs.disconnect();
+          if (!mmChico.matches || andando) return;
+          setTimeout(function () {
+            if (andando || !mmChico.matches) return;
+            try { riel.scrollTo({ left: 38, behavior: "smooth" }); }
+            catch (err) { riel.scrollLeft = 38; }
+          }, 420);
+        }, { threshold: 0.35 });
+        mirando.observe(riel);
+      }
+    } else {
+      cerca = true;
+    }
+
+    pintar();
+    // las medidas cambian cuando terminan de cargar las fotos
+    window.addEventListener("load", function () { requestAnimationFrame(pintar); });
+  }
+
   /* ═══════ escenas que solo existen en pantalla grande ═══════ */
   var mm = gsap.matchMedia();
 
@@ -649,10 +924,25 @@
   });
 
 
-  /* en celular no hay scrub: el volumen se deja en una pose armada y quieto */
-  mm.add("(max-width: 767px)", function () {
-    if (hay3d) window.Redondel.progreso(0.3);
-    return function () { if (hay3d) window.Redondel.progreso(0); };
+  /* 01 · en celular la portada es la planta del redondel, no el volumen:
+     Three.js ni siquiera se descarga (ver el <script> del final del HTML).
+     El scroll la agranda y la apaga mientras el título sube. Todo es
+     transform y opacidad: nada que obligue al navegador a recalcular. */
+  mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", function () {
+    var linea = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".portada", start: "top top", end: "bottom bottom", scrub: 0.6
+      }
+    });
+    linea.to(".portada-texto", { yPercent: -30, autoAlpha: 0, ease: "none" }, 0)
+         .to(".planta", { scale: 1.6, opacity: 0, ease: "none" }, 0)
+         .to(".pista", { autoAlpha: 0, ease: "none", duration: 0.22 }, 0);
+
+    return function () {
+      linea.scrollTrigger && linea.scrollTrigger.kill();
+      linea.kill();
+      gsap.set([".portada-texto", ".planta", ".pista"], { clearProps: "all" });
+    };
   });
 
   /* ═══════ revelados, índice y cinta ═══════

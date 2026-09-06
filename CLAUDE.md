@@ -564,18 +564,126 @@ parece que el cambio no hizo nada. Recargá con `?v=N` o con `fetch(url,
 {cache:'reload'})`. Ya pasó: el módulo del ruedo parecía no arrancar y lo que
 corría era un `main.js` de tres ediciones antes.
 
+### Cuando el navegador de prueba dice `hidden`
+
+Antes de creerle a una prueba, chequeá `document.visibilityState`. Si dice
+`hidden` —el panel del navegador está tapado o la ventana minimizada—, todo lo
+que cuelga del ciclo de pintado queda congelado y las conclusiones salen mal:
+
+- `requestAnimationFrame` no corre → Lenis y GSAP no avanzan, y un
+  `lenis.scrollTo()` se queda a mitad de camino;
+- `IntersectionObserver` no entrega → los observadores no disparan;
+- las transiciones y animaciones CSS no arrancan;
+- las imágenes con `loading="lazy"` no se piden.
+
+Las capturas de pantalla sí funcionan (fuerzan un cuadro) y las medidas del DOM
+también. O sea: para composición y medidas el navegador de prueba sirve; para
+cualquier cosa atada al tiempo, no. En esa ronda esto hizo parecer rotas tres
+cosas que andaban bien.
+
 ## Celular
 
-Es la versión simple, a propósito:
-- sin pin y sin scrub;
-- el índice de muestras se apila solo: no necesita versión aparte;
-- el recorrido 3D pasa a la grilla de 29 obras (`.sala-lista`);
-- el volumen 3D queda en una pose armada y quieto (`progreso(0.3)`), sin polvo
-  y sin bucle continuo;
-- sin luz de sala y con todas las fichas encendidas;
-- sin la marca de la Plaza (`.lugar-marca` queda en `display:none`).
+**No es la web achicada: tiene su propia versión de las tres escenas grandes.**
 
-Quedan el umbral y la cinta: son transformaciones sueltas y no cuestan nada.
+Antes sí era la web achicada, y se notaba: la portada mostraba el volumen 3D
+congelado en media pose, el hueco de la marca reservaba 420 px de nada, el
+pasillo se caía a una lista de 29 fotos apiladas, la barra le pasaba por encima
+al texto todo el rato y no había forma de saltar de sección. Ahora:
+
+| Escritorio | Celular |
+|---|---|
+| Portada: el redondel 3D se arma con el scroll | La **planta del redondel** dibujándose en SVG |
+| La marca de la Plaza en volumen, al costado | No va: la planta de la portada ya es el isotipo |
+| El pasillo caminado con el mouse | El mismo pasillo, **caminado con el dedo** |
+| Nav en la barra | Botón **Índice** + hoja a pantalla completa |
+
+Todo vive en un solo bloque de `style.css`, **al final del archivo**, y en un
+solo bloque de `main.js` (`barraQueSeAparta`, `armarIndice`, `armarPasillo`).
+Nada de esto toca la versión de escritorio.
+
+### Three.js no se descarga en el teléfono
+
+El `<script>` del final del HTML inyecta las cuatro piezas de 3D (Three + los
+tres módulos) **solo** si `min-width: 768px` y hay movimiento permitido. Son
+~620 KB que en el teléfono no se usaban para nada. La carga inicial pasó de
+922 KB a **275 KB en 13 pedidos**.
+
+Van inyectados con `script.async = false` y no como `<script src>` sueltos:
+un script creado a mano arranca en async, y así `main.js` podría correr antes
+que GSAP. Con `async = false` se ejecutan en el orden en que se agregan. El
+bloque va al final del `<body>`, así que cuando corre el DOM ya está entero.
+
+### La planta del redondel (`.planta`)
+
+Es el isotipo de la Plaza dibujado en línea: 6 anillos, 8 cuñas y el aro del
+perímetro. **La geometría no está dibujada a ojo**: sale de las mismas tablas
+`CUNAS` y `ANILLOS` de `js/ruedo.js` —las que se midieron decodificando el PNG
+en coordenadas polares— pasadas a arcos SVG. Si algún día hay que retocarla,
+se regenera desde esas tablas, no se toca el `d=` a mano.
+
+Dos trampas que ya costaron una vuelta:
+
+- **Nada de `vector-effect: non-scaling-stroke`.** Con eso el punteado del
+  trazado se calcula en píxeles de pantalla: `stroke-dasharray: 1` pasa a ser
+  una rayita de 1 px y el dibujo entero sale punteado en vez de con líneas
+  enteras. El grosor va en unidades del viewBox (`stroke-width: .0088`).
+- **La planta no puede traer un `transform` propio de posicionamiento.** El
+  scroll le anima la escala y se lo comería. Va en el flujo, dentro del
+  `flex` de `.portada-pin`.
+
+El trazado arranca a los 2 s por CSS puro, sin depender del JS: el umbral dura
+1,85 s y no tiene sentido dibujar abajo de la cortina.
+
+### El pasillo, caminado con el dedo
+
+Es el **mismo** `.sala-grilla` del HTML —las mismas 29 fotos, la misma marca
+semántica—. En el teléfono el CSS lo vuelve un riel horizontal con
+`scroll-snap-type: x mandatory`. El scroll lo hace el navegador: la inercia es
+la del sistema y no hay nada que pueda ir a destiempo.
+
+- **Imanta por el borde de arranque** (`scroll-snap-align: start`), no por el
+  centro: la obra que estás mirando queda pegada al margen izquierdo, siempre
+  en el mismo lugar, y la siguiente asoma. Centrado, la primera y la última
+  nunca llegan a su punto y la cuenta miente.
+- `armarPasillo()` le agrega la cuenta (`01 / 29`), la barra de avance y la
+  profundidad: cada tarjeta se achica y se apaga según lo lejos que esté del
+  ancla. Es un `transform` y una `opacity`, nada que obligue a recalcular.
+- **Las fotos se piden de a cuatro, adelantadas.** Las 29 en lazy son 3,5 MB,
+  pero el lazy solo llega tarde en un riel: la foto empieza a pedirse recién
+  cuando ya la estás mirando y se camina contra tarjetas en blanco.
+  `adelantar()` le saca el `loading="lazy"` a las cuatro que vienen. Y no
+  arranca hasta que el pasillo está cerca (`IntersectionObserver` con
+  `rootMargin: 700px`): sin ese candado, la carga inicial se llevaba medio
+  mega en fotos que están a 5.800 px de donde empieza la página.
+- Tocar una obra abre el visor con la foto entera, sin el recorte 4:5 de la
+  tarjeta. Las `figure` llevan `role="button"` y `tabindex` puestos por JS.
+- Al final del riel hay un remate (`.sala-fin`) que lleva a *Visitar*.
+
+### La barra se aparta
+
+Al bajar se va, al subir vuelve (`.escondida`). Es una página de ocho mil
+píxeles y la barra tapaba texto todo el tiempo. El umbral de 9 px es para que
+el rebote del scroll no la haga titilar.
+
+### El índice
+
+Botón en la barra, hoja oscura a pantalla completa, destinos abajo —en el
+tramo donde llega el pulgar—. Dos cosas que no son evidentes:
+
+- La hoja va en `z-index: 90`, **debajo** de la barra: ahí está el botón que
+  la cierra. La barra se da vuelta sola porque `barraSegunFondo()` ve un
+  bloque `.invertido` cubriendo la pantalla (hay que llamarla a mano al abrir
+  y al cerrar).
+- El salto a un ancla se ataja **en captura**. El handler de anclas está
+  puesto sobre cada `<a>` y correría antes que uno normal en la hoja: le
+  pediría el salto a Lenis mientras Lenis está parado por la hoja abierta, y
+  el salto se pierde. Atajándolo en captura, primero se cierra —que es lo que
+  vuelve a soltar el scroll— y recién después se pide el viaje.
+
+### Lo que quedó igual
+
+El umbral, la cinta de nombres, las fichas de muestras y el visor. Y sigue sin
+haber luz de sala (necesita puntero fino).
 
 El tráfico va a venir del Instagram de la Plaza, o sea celulares. Probá siempre
 en un teléfono real, no solo achicando la ventana.

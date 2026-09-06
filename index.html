@@ -60,7 +60,31 @@
   </nav>
   <p class="indice" aria-hidden="true"><span class="ml"><span class="ln" id="indiceNum">01</span></span></p>
   <div class="ruedo" aria-hidden="true"><i id="ruedoFill"></i></div>
+  <!-- CELULAR · abre el índice. En pantalla grande la nav de la barra ya
+       está, así que el botón no se muestra. -->
+  <button class="barra-menu" id="barraMenu" type="button"
+          aria-expanded="false" aria-controls="indice-hoja">
+    <span>Índice</span>
+    <i aria-hidden="true"></i>
+  </button>
 </header>
+
+<!-- CELULAR · el índice. En el teléfono la nav de la barra no entra y la
+     página mide nueve mil píxeles: sin esto no hay forma de saltar. -->
+<nav class="indice-hoja invertido" id="indice-hoja" aria-label="Índice de secciones" hidden>
+  <ul class="indice-lista">
+    <li><a href="#portada"><b>00</b><span>Portada</span></a></li>
+    <li><a href="#lugar"><b>01</b><span>El lugar</span></a></li>
+    <li><a href="#manifiesto"><b>02</b><span>Qué es</span></a></li>
+    <li><a href="#muestras"><b>03</b><span>Muestras</span></a></li>
+    <li><a href="#recorrido"><b>04</b><span>El recorrido</span></a></li>
+    <li><a href="#visitar"><b>05</b><span>Visitar</span></a></li>
+  </ul>
+  <p class="indice-pie">
+    <a href="https://redtickets.uy/productor/PlazaToros" target="_blank" rel="noopener">Entradas</a>
+    <a href="https://www.instagram.com/plazadetoroscolonia/" target="_blank" rel="noopener">Instagram</a>
+  </p>
+</nav>
 
 <main id="contenido">
 
@@ -69,6 +93,43 @@
   <div class="portada-pin">
     <canvas id="lienzo" aria-hidden="true"></canvas>
     <img class="portada-poster" src="assets/logo-vertical.png" alt="" aria-hidden="true">
+
+    <!-- CELULAR · la planta del redondel. Reemplaza al volumen 3D, que en el
+         teléfono se veía como una pose congelada. La geometría no está
+         dibujada a ojo: sale de las mismas medidas del isotipo de la Plaza
+         que usa js/ruedo.js (8 cuñas, 6 anillos) pasadas a arcos SVG. Se
+         traza sola al entrar y después gira muy despacio. -->
+    <svg class="planta" viewBox="-1.06 -1.06 2.12 2.12" aria-hidden="true">
+      <g class="planta-gira">
+      <path class="planta-aro" pathLength="1" style="--i:0" d="M1 0A1 1 0 1 0 -1 0A1 1 0 1 0 1 0"/>
+      <path class="planta-anillo" pathLength="1" style="--i:1" d="M-0.0009 -0.491A0.491 0.491 0 0 0 -0.4226 0.2499"/>
+      <path class="planta-anillo" pathLength="1" style="--i:2" d="M-0.3926 0.2948A0.491 0.491 0 0 0 0.1312 0.4731"/>
+      <path class="planta-anillo" pathLength="1" style="--i:3" d="M0.2893 0.3967A0.491 0.491 0 0 0 0.4027 0.2809"/>
+      <path class="planta-anillo" pathLength="1" style="--i:4" d="M-0.001 -0.589A0.589 0.589 0 0 0 -0.5096 0.2954"/>
+      <path class="planta-anillo" pathLength="1" style="--i:5" d="M-0.4077 0.4251A0.589 0.589 0 0 0 -0.2092 0.5506"/>
+      <path class="planta-anillo" pathLength="1" style="--i:6" d="M0.0185 0.5887A0.589 0.589 0 0 0 0.4459 0.3849"/>
+      <path class="planta-anillo" pathLength="1" style="--i:7" d="M-0.0012 -0.688A0.688 0.688 0 0 0 -0.5946 0.3461"/>
+      <path class="planta-anillo" pathLength="1" style="--i:8" d="M-0.5451 0.4198A0.688 0.688 0 0 0 0.1885 0.6617"/>
+      <path class="planta-anillo" pathLength="1" style="--i:9" d="M0.3747 0.577A0.688 0.688 0 0 0 0.5608 0.3985"/>
+      <path class="planta-anillo" pathLength="1" style="--i:10" d="M-0.0014 -0.785A0.785 0.785 0 0 0 -0.6805 0.3913"/>
+      <path class="planta-anillo" pathLength="1" style="--i:11" d="M-0.6591 0.4264A0.785 0.785 0 0 0 -0.5433 0.5666"/>
+      <path class="planta-anillo" pathLength="1" style="--i:12" d="M-0.3255 0.7143A0.785 0.785 0 0 0 0.494 0.6101"/>
+      <path class="planta-anillo" pathLength="1" style="--i:13" d="M-0.0015 -0.884A0.884 0.884 0 0 0 -0.7656 0.442"/>
+      <path class="planta-anillo" pathLength="1" style="--i:14" d="M-0.6682 0.5788A0.884 0.884 0 0 0 0.0339 0.8833"/>
+      <path class="planta-anillo" pathLength="1" style="--i:15" d="M0.2377 0.8514A0.884 0.884 0 0 0 0.7489 0.4698"/>
+      <path class="planta-anillo" pathLength="1" style="--i:16" d="M-0.0017 -0.979A0.979 0.979 0 0 0 -0.8461 0.4925"/>
+      <path class="planta-anillo" pathLength="1" style="--i:17" d="M-0.7757 0.5973A0.979 0.979 0 0 0 -0.4746 0.8563"/>
+      <path class="planta-anillo" pathLength="1" style="--i:18" d="M-0.1006 0.9738A0.979 0.979 0 0 0 0.7321 0.65"/>
+      <path class="planta-cuna" pathLength="1" style="--i:19" d="M0.8771 0.4802A1 1 0 0 0 0.9478 0.319L0.4407 0.1483A0.465 0.465 0 0 1 0.4079 0.2233Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:20" d="M0.9703 0.2419A1 1 0 0 0 0.9979 0.0645L0.464 0.03A0.465 0.465 0 0 1 0.4512 0.1125Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:21" d="M0.9999 -0.014A1 1 0 0 0 0.9816 -0.1908L0.4565 -0.0887A0.465 0.465 0 0 1 0.465 -0.0065Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:22" d="M0.9636 -0.2672A1 1 0 0 0 0.9003 -0.4352L0.4186 -0.2024A0.465 0.465 0 0 1 0.4481 -0.1243Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:23" d="M0.8634 -0.5045A1 1 0 0 0 0.7593 -0.6508L0.3531 -0.3026A0.465 0.465 0 0 1 0.4015 -0.2346Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:24" d="M0.7059 -0.7083A1 1 0 0 0 0.5678 -0.8231L0.264 -0.3828A0.465 0.465 0 0 1 0.3282 -0.3294Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:25" d="M0.5 -0.866A1 1 0 0 0 0.3355 -0.9421L0.156 -0.4381A0.465 0.465 0 0 1 0.2325 -0.4027Z"/>
+      <path class="planta-cuna" pathLength="1" style="--i:26" d="M0.2588 -0.9659A1 1 0 0 0 0.0819 -0.9966L0.0381 -0.4634A0.465 0.465 0 0 1 0.1204 -0.4492Z"/>
+      </g>
+    </svg>
 
     <svg class="sello" viewBox="0 0 320 320" aria-hidden="true">
       <defs><path id="aro" d="M160,160 m-133,0 a133,133 0 1,1 266,0 a133,133 0 1,1 -266,0"></path></defs>
@@ -150,7 +211,7 @@
 <!-- ══════════ 03 · QUÉ ES ══════════ -->
 <!-- TEXTO PROVISORIO: redactado a partir de datos verificados del predio y de las
      muestras relevadas. Falta el texto institucional de Laura para reemplazarlo. -->
-<section class="manifiesto" data-escena="03">
+<section class="manifiesto" id="manifiesto" data-escena="03">
   <div class="rotulo">
     <i class="regla" data-regla aria-hidden="true"></i>
     <p class="eyebrow">02 — Qué es</p>
@@ -284,181 +345,195 @@
       <p class="eyebrow">04 — El recorrido</p>
       <h2 class="titulo-m">Las obras que pasaron por la sala</h2>
     </div>
+
+    <!-- CELULAR · el pasillo se camina con el dedo. Es la MISMA grilla de
+         abajo: en el teléfono el CSS la vuelve un riel horizontal con
+         imantado. Este bloque es su cuenta y su barra de avance. -->
+    <div class="sala-paso" aria-hidden="true">
+      <p class="sala-cuenta"><b id="salaPasoN">01</b><i>/</i><span id="salaPasoTot">29</span></p>
+      <p class="sala-guia">Deslizá para caminar la sala →</p>
+      <p class="sala-riel"><i id="salaPasoRiel"></i></p>
+    </div>
+
     <div class="sala-grilla" data-revelar-grupo>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinergia-01.jpg"
              srcset="assets/img/sala/sinergia-01-sm.jpg 720w, assets/img/sala/sinergia-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — pieza gráfica en rojo, negro y blanco." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — pieza gráfica en rojo, negro y blanco." loading="lazy" width="1280" height="849">
         <figcaption><b>Sinergia</b><span>Pieza gráfica en rojo, negro y blanco</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinergia-02.jpg"
              srcset="assets/img/sala/sinergia-02-sm.jpg 720w, assets/img/sala/sinergia-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — pintura de flores sobre fondo oscuro." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — pintura de flores sobre fondo oscuro." loading="lazy" width="1280" height="853">
         <figcaption><b>Sinergia</b><span>Pintura de flores sobre fondo oscuro</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinergia-03.jpg"
              srcset="assets/img/sala/sinergia-03-sm.jpg 720w, assets/img/sala/sinergia-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — escultura sobre pedestal, con obra colgada detrás." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinergia — escultura sobre pedestal, con obra colgada detrás." loading="lazy" width="1280" height="853">
         <figcaption><b>Sinergia</b><span>Escultura sobre pedestal, con obra colgada detrás</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/relatos-01.jpg"
              srcset="assets/img/sala/relatos-01-sm.jpg 720w, assets/img/sala/relatos-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — público recorriendo la muestra bajo la estructura." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — público recorriendo la muestra bajo la estructura." loading="lazy" width="1280" height="853">
         <figcaption><b>Relatos Dibujados</b><span>Público recorriendo la muestra bajo la estructura</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/relatos-02.jpg"
              srcset="assets/img/sala/relatos-02-sm.jpg 720w, assets/img/sala/relatos-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — serie de dibujos enmarcados." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — serie de dibujos enmarcados." loading="lazy" width="1280" height="858">
         <figcaption><b>Relatos Dibujados</b><span>Serie de dibujos enmarcados</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/relatos-03.jpg"
              srcset="assets/img/sala/relatos-03-sm.jpg 720w, assets/img/sala/relatos-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — los paneles y las barricas en el pasillo." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Relatos Dibujados — los paneles y las barricas en el pasillo." loading="lazy" width="1280" height="853">
         <figcaption><b>Relatos Dibujados</b><span>Los paneles y las barricas en el pasillo</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/magin-01.jpg"
              srcset="assets/img/sala/magin-01-sm.jpg 720w, assets/img/sala/magin-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — escultura ensamblada en la sala principal." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — escultura ensamblada en la sala principal." loading="lazy" width="853" height="1280">
         <figcaption><b>El Secreto de Magín</b><span>Escultura ensamblada en la sala principal</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/magin-02.jpg"
              srcset="assets/img/sala/magin-02-sm.jpg 720w, assets/img/sala/magin-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — dos piezas colgadas sobre tela rayada." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — dos piezas colgadas sobre tela rayada." loading="lazy" width="1280" height="853">
         <figcaption><b>El Secreto de Magín</b><span>Dos piezas colgadas sobre tela rayada</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/magin-03.jpg"
              srcset="assets/img/sala/magin-03-sm.jpg 720w, assets/img/sala/magin-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — pinturas sobre el muro blanco." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — pinturas sobre el muro blanco." loading="lazy" width="1280" height="853">
         <figcaption><b>El Secreto de Magín</b><span>Pinturas sobre el muro blanco</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/magin-04.jpg"
              srcset="assets/img/sala/magin-04-sm.jpg 720w, assets/img/sala/magin-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — pieza montada en vitrina." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="El Secreto de Magín — pieza montada en vitrina." loading="lazy" width="1280" height="853">
         <figcaption><b>El Secreto de Magín</b><span>Pieza montada en vitrina</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinfonia-05.jpg"
              srcset="assets/img/sala/sinfonia-05-sm.jpg 720w, assets/img/sala/sinfonia-05.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — escultura de gran porte en el centro de la sala." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — escultura de gran porte en el centro de la sala." loading="lazy" width="853" height="1280">
         <figcaption><b>Sinfonía de Colores</b><span>Escultura de gran porte en el centro de la sala</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinfonia-02.jpg"
              srcset="assets/img/sala/sinfonia-02-sm.jpg 720w, assets/img/sala/sinfonia-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — telas azules y rosadas montadas sobre caballetes." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — telas azules y rosadas montadas sobre caballetes." loading="lazy" width="853" height="1280">
         <figcaption><b>Sinfonía de Colores</b><span>Telas azules y rosadas montadas sobre caballetes</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinfonia-03.jpg"
              srcset="assets/img/sala/sinfonia-03-sm.jpg 720w, assets/img/sala/sinfonia-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — intervención con vestuario frente a los paneles." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — intervención con vestuario frente a los paneles." loading="lazy" width="1280" height="1061">
         <figcaption><b>Sinfonía de Colores</b><span>Intervención con vestuario frente a los paneles</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinfonia-04.jpg"
              srcset="assets/img/sala/sinfonia-04-sm.jpg 720w, assets/img/sala/sinfonia-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — la sala montada con caballetes y pinturas." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — la sala montada con caballetes y pinturas." loading="lazy" width="1280" height="853">
         <figcaption><b>Sinfonía de Colores</b><span>La sala montada con caballetes y pinturas</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/sinfonia-01.jpg"
              srcset="assets/img/sala/sinfonia-01-sm.jpg 720w, assets/img/sala/sinfonia-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — cerámicas y pinturas en penumbra." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Sinfonía de Colores — cerámicas y pinturas en penumbra." loading="lazy" width="853" height="1280">
         <figcaption><b>Sinfonía de Colores</b><span>Cerámicas y pinturas en penumbra</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/../bianki-torre.jpg"
              srcset="assets/img/bianki-torre-sm.jpg 720w, assets/img/sala/../bianki-torre.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Espacio Bianki — torre de paños pintados colgando del techo." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Espacio Bianki — torre de paños pintados colgando del techo." loading="lazy" width="1066" height="1600">
         <figcaption><b>Espacio Bianki</b><span>Torre de paños pintados colgando del techo</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/../obra-figuras.jpg"
              srcset="assets/img/obra-figuras-sm.jpg 720w, assets/img/sala/../obra-figuras.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Espacio Bianki — detalle de una pieza textil." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Espacio Bianki — detalle de una pieza textil." loading="lazy" width="1600" height="1066">
         <figcaption><b>Espacio Bianki</b><span>Detalle de una pieza textil</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/obra-01.jpg"
              srcset="assets/img/sala/obra-01-sm.jpg 720w, assets/img/sala/obra-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — cartel de sala de la muestra, subtitulada habitar." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — cartel de sala de la muestra, subtitulada habitar." loading="lazy" width="1280" height="836">
         <figcaption><b>Gente en Obra</b><span>Cartel de sala de la muestra, subtitulada Habitar</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/obra-02.jpg"
              srcset="assets/img/sala/obra-02-sm.jpg 720w, assets/img/sala/obra-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — muro de retratos pequeños, uno al lado del otro." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — muro de retratos pequeños, uno al lado del otro." loading="lazy" width="1280" height="876">
         <figcaption><b>Gente en Obra</b><span>Muro de retratos pequeños, uno al lado del otro</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/obra-03.jpg"
              srcset="assets/img/sala/obra-03-sm.jpg 720w, assets/img/sala/obra-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — pieza azul y blanca sobre estructura de red." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — pieza azul y blanca sobre estructura de red." loading="lazy" width="1280" height="888">
         <figcaption><b>Gente en Obra</b><span>Pieza azul y blanca sobre estructura de red</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/obra-04.jpg"
              srcset="assets/img/sala/obra-04-sm.jpg 720w, assets/img/sala/obra-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — la nave con una pieza orgánica corriendo por el muro." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Gente en Obra — la nave con una pieza orgánica corriendo por el muro." loading="lazy" width="1280" height="876">
         <figcaption><b>Gente en Obra</b><span>La nave con una pieza orgánica corriendo por el muro</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/interfaz-01.jpg"
              srcset="assets/img/sala/interfaz-01-sm.jpg 720w, assets/img/sala/interfaz-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — escultura de cables frente al cartel de espacio arte." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — escultura de cables frente al cartel de espacio arte." loading="lazy" width="1280" height="841">
         <figcaption><b>Interfaz</b><span>Escultura de cables frente al cartel de Espacio Arte</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/interfaz-02.jpg"
              srcset="assets/img/sala/interfaz-02-sm.jpg 720w, assets/img/sala/interfaz-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — maraña de cordones de color, de cerca." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — maraña de cordones de color, de cerca." loading="lazy" width="1280" height="861">
         <figcaption><b>Interfaz</b><span>Maraña de cordones de color, de cerca</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/interfaz-03.jpg"
              srcset="assets/img/sala/interfaz-03-sm.jpg 720w, assets/img/sala/interfaz-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — pieza roja sobre pedestal blanco." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — pieza roja sobre pedestal blanco." loading="lazy" width="1280" height="831">
         <figcaption><b>Interfaz</b><span>Pieza roja sobre pedestal blanco</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/interfaz-04.jpg"
              srcset="assets/img/sala/interfaz-04-sm.jpg 720w, assets/img/sala/interfaz-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — la sala blanca con las piezas sobre pedestales." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — la sala blanca con las piezas sobre pedestales." loading="lazy" width="1280" height="828">
         <figcaption><b>Interfaz</b><span>La sala blanca con las piezas sobre pedestales</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/lanzamiento-01.jpg"
              srcset="assets/img/sala/lanzamiento-01-sm.jpg 720w, assets/img/sala/lanzamiento-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — proyección de color sobre las columnas de hierro." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — proyección de color sobre las columnas de hierro." loading="lazy" width="1280" height="853">
         <figcaption><b>Lanzamiento interactivo</b><span>Proyección de color sobre las columnas de hierro</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/lanzamiento-02.jpg"
              srcset="assets/img/sala/lanzamiento-02-sm.jpg 720w, assets/img/sala/lanzamiento-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — los arcos iluminados, con público." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — los arcos iluminados, con público." loading="lazy" width="853" height="1280">
         <figcaption><b>Lanzamiento interactivo</b><span>Los arcos iluminados, con público</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/lanzamiento-03.jpg"
              srcset="assets/img/sala/lanzamiento-03-sm.jpg 720w, assets/img/sala/lanzamiento-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — set de música en vivo entre pantallas." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — set de música en vivo entre pantallas." loading="lazy" width="1280" height="853">
         <figcaption><b>Lanzamiento interactivo</b><span>Set de música en vivo entre pantallas</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/lanzamiento-04.jpg"
              srcset="assets/img/sala/lanzamiento-04-sm.jpg 720w, assets/img/sala/lanzamiento-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — intervención de danza en la galería." loading="lazy">
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — intervención de danza en la galería." loading="lazy" width="853" height="1280">
         <figcaption><b>Lanzamiento interactivo</b><span>Intervención de danza en la galería</span></figcaption>
       </figure>
+      <a class="sala-fin" href="#visitar">
+        <b>Fin del recorrido</b>
+        <span>Cómo llegar y cuándo venir&nbsp;→</span>
+      </a>
     </div>
   </div>
 </section>
@@ -501,13 +576,36 @@
   </figure>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
-<script src="js/redondel.js"></script>
-<script src="js/ruedo.js"></script>
-<script src="js/recorrido.js"></script>
-<script src="js/main.js"></script>
+<!-- Three.js y las tres escenas 3D pesan ~620 KB juntas y en el teléfono no
+     se usa ninguna: la portada, la marca y el pasillo tienen ahí su propia
+     versión táctil. Se piden solo cuando la pantalla da el ancho.
+
+     Van inyectados y no como <script src> sueltos por el orden: un script
+     creado a mano arranca en async, y así main.js podría correr antes que
+     GSAP. Con async=false el navegador los ejecuta en el orden en que se
+     agregan, que es justo lo que hace falta. El bloque vive al final del
+     body, así que cuando corre el DOM ya está entero. -->
+<script>
+(function () {
+  var lista = [
+    "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js",
+    "https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"
+  ];
+  if (matchMedia("(min-width: 768px)").matches &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    lista.push(
+      "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js",
+      "js/redondel.js", "js/ruedo.js", "js/recorrido.js");
+  }
+  lista.push("js/main.js");
+  lista.forEach(function (src) {
+    var s = document.createElement("script");
+    s.src = src;
+    s.async = false;
+    document.head.appendChild(s);
+  });
+})();
+</script>
 </body>
 </html>

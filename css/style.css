@@ -812,3 +812,318 @@ html.js .umbral{animation:none}
 @media (prefers-reduced-motion:reduce){
   .planos-svg rect,.planos-svg circle{stroke-dashoffset:0 !important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CELULAR (≤767px) — no es la web achicada
+
+   El teléfono tiene su propia versión de las tres escenas grandes, y por eso
+   ni siquiera baja Three.js (ver el bloque de <script> al final del HTML):
+
+     · portada  → la planta del redondel dibujándose en SVG, en vez del
+                  volumen 3D, que acá quedaba congelado en media pose;
+     · marca    → no va: la planta de la portada ya es el isotipo;
+     · pasillo  → la misma grilla de obras vuelta riel horizontal imantado.
+                  Se camina con el dedo, que es el gesto que corresponde.
+
+   Va AL FINAL del archivo a propósito. Estas reglas pisan a las de arriba
+   con la misma especificidad, así que tienen que llegar después. Poner un
+   override de celular a mitad del archivo ya rompió cosas antes.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width:767px){
+
+  /* ── base ── */
+  html{-webkit-text-size-adjust:100%}
+  body{font-size:16px}
+  /* el destello gris de Android en cada toque pelea con el press propio */
+  a,button,.ficha,.sala-obra{-webkit-tap-highlight-color:transparent}
+  :root{--pad:20px}
+
+  /* ── la barra: se va cuando bajás, vuelve cuando subís ──
+     Es una página de nueve mil píxeles y la barra tapaba texto todo el
+     tiempo. Escondiéndola al bajar, la lectura queda limpia; al subir
+     vuelve sola, que es cuando la vas a querer. */
+  .barra{
+    height:calc(56px + env(safe-area-inset-top));
+    padding-top:env(safe-area-inset-top);
+    gap:12px;
+    background:linear-gradient(to bottom,
+      rgba(var(--velo),.99) 0%, rgba(var(--velo),.97) 64%, rgba(var(--velo),0) 100%);
+    transform:translate3d(0,0,0);
+    transition:transform .34s var(--ease-salida);
+  }
+  .barra.escondida{transform:translate3d(0,-105%,0)}
+  /* con el índice abierto la barra se queda: ahí vive el botón de cerrar */
+  .barra.fija{transform:translate3d(0,0,0) !important}
+  .barra-nav{display:none}
+  .barra-logo img{width:112px}
+  .barra-marca{font-size:12px}
+  /* sin la nav, el índice y el aro se amontonaban contra el logo */
+  .indice{margin-left:auto}
+
+  .barra-menu{
+    -webkit-appearance:none;appearance:none;
+    display:flex;align-items:center;gap:8px;
+    min-height:44px;padding:0 2px 0 10px;margin:0;
+    background:none;border:0;color:var(--humo);
+    font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;
+    text-transform:uppercase;cursor:pointer;
+  }
+  .barra-menu span{display:block}
+  /* dos rayas: la de arriba más corta, para que se lea como un índice
+     y no como el menú de una app cualquiera */
+  .barra-menu i{
+    display:block;position:relative;width:17px;height:9px;flex:none;
+  }
+  .barra-menu i::before,.barra-menu i::after{
+    content:"";position:absolute;left:0;height:1px;background:currentColor;
+    transition:width var(--t-toque) var(--ease-salida),
+               transform var(--t-toque) var(--ease-salida);
+  }
+  .barra-menu i::before{top:2px;width:17px}
+  .barra-menu i::after{bottom:2px;width:11px}
+  .barra.en-oscuro .barra-menu{color:#8E9299}
+  .barra-menu[aria-expanded="true"]{color:var(--tinta)}
+  .barra-menu[aria-expanded="true"] i::before{top:4px;transform:rotate(45deg);width:15px}
+  .barra-menu[aria-expanded="true"] i::after{bottom:4px;transform:rotate(-45deg);width:15px}
+
+  /* ── la hoja del índice ──
+     Los destinos van abajo, en el tramo donde llega el pulgar; arriba
+     queda el aire. */
+  /* z-index 90: DEBAJO de la barra, que va en 100. La barra tiene que
+     quedar arriba de la hoja porque ahí está el botón que la cierra —y se
+     da vuelta sola al fondo oscuro, así que se lee igual. */
+  .indice-hoja{
+    position:fixed;inset:0;z-index:90;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    gap:30px;
+    padding:calc(70px + env(safe-area-inset-top)) var(--pad)
+            calc(38px + env(safe-area-inset-bottom));
+    opacity:0;
+    transition:opacity .26s var(--ease-salida);
+  }
+  .indice-hoja.abierta{opacity:1}
+  .indice-lista{list-style:none;margin:0;padding:0}
+  .indice-lista a{
+    display:flex;align-items:baseline;gap:16px;
+    padding:13px 0;min-height:52px;
+    border-bottom:1px solid var(--linea);
+  }
+  .indice-lista li:first-child a{border-top:1px solid var(--linea)}
+  .indice-lista b{
+    font-family:var(--f-mono);font-weight:400;font-size:10.5px;
+    letter-spacing:.16em;color:var(--humo);
+    font-variant-numeric:tabular-nums;flex:none;
+  }
+  .indice-lista span{
+    font-family:var(--f-display);font-weight:300;
+    font-size:29px;line-height:1;letter-spacing:-.018em;
+  }
+  .indice-pie{
+    margin:0;display:flex;gap:26px;
+    font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--humo);
+  }
+  .indice-pie a{
+    min-height:44px;display:flex;align-items:center;
+    border-bottom:1px solid var(--linea-fuerte);
+  }
+
+  /* ═══ 01 · PORTADA ═══
+     El canvas y el póster se van: la planta ocupa su lugar. */
+  #lienzo,.portada-poster,.sello{display:none}
+  .portada{height:168vh}
+  .portada-pin{height:100vh;min-height:0}
+  @supports (height:100svh){
+    .portada{height:168svh}
+    .portada-pin{height:100svh}
+  }
+  /* Un lockup apilado: la planta arriba, el nombre abajo. Es el mismo orden
+     que tiene el logo de la Plaza, y deja de haber texto encima de líneas.
+     Antes la planta iba centrada detrás del título y las dos cosas se
+     estorbaban. */
+  .portada-pin{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(20px,5vh,40px);
+  }
+  .portada-texto{gap:15px}
+  /* la línea entera entra en dos renglones: con el tracking de escritorio
+     se partía en cuatro */
+  .portada-texto .eyebrow{font-size:9.5px;letter-spacing:.11em;max-width:none;text-wrap:balance}
+  .portada-bajada{font-size:16.5px;max-width:24ch}
+  .pista{bottom:calc(24px + env(safe-area-inset-bottom))}
+
+  /* En el flujo, no absoluta: el hueco que ocupa es el que separa la marca
+     del nombre. El scroll le anima la escala, así que no puede traer un
+     transform propio de posicionamiento. */
+  .planta{
+    display:block;position:relative;flex:none;
+    width:min(56vw,260px);aspect-ratio:1;height:auto;
+    color:var(--tinta);opacity:.62;pointer-events:none;
+  }
+  /* El grosor va en unidades del viewBox y NO con vector-effect. Con
+     non-scaling-stroke el punteado del trazado se calcula en píxeles de
+     pantalla: stroke-dasharray:1 pasa a ser un rayita de 1 px y el dibujo
+     entero sale punteado en vez de con líneas enteras. Además, así el
+     trazo engorda cuando el scroll agranda la planta, que es lo que se
+     quiere al entrar. */
+  .planta path{fill:none;stroke:currentColor;stroke-width:.0088}
+  .planta .planta-aro{opacity:.4}
+  .planta .planta-cuna{stroke-width:.011}
+  .planta-gira{transform-origin:50% 50%}
+
+  /* ═══ 02 · EL LUGAR ═══
+     El hueco de la marca reservaba 420 px de nada: acá no hay marca 3D. */
+  .lugar-marca-hueco{display:none}
+  .lugar{
+    gap:44px;
+    padding:78px var(--pad) 62px;
+  }
+  .lugar-cuerpo{gap:38px}
+  .lugar-decir{gap:24px}
+  .declaracion{max-width:none;font-size:23px}
+  .manifiesto{padding-top:70px}
+
+  /* ═══ 03 · MUESTRAS ═══ */
+  .ficha{opacity:1}
+  .ficha-titulo{font-size:24px}
+
+  /* ═══ 04 · EL RECORRIDO, CAMINADO CON EL DEDO ═══
+     Misma grilla, mismo HTML, mismas fotos: en el teléfono se lee como un
+     riel horizontal con imantado. El scroll es nativo, así que la inercia
+     es la del sistema y no hay nada que pueda trabarse. */
+  .sala-lista{padding:54px 0 44px}
+  .sala-cabecera{padding-inline:var(--pad);margin-bottom:20px;gap:10px}
+
+  .sala-paso{
+    display:grid;grid-template-columns:auto 1fr;align-items:center;
+    gap:8px 14px;padding:0 var(--pad) 18px;
+  }
+  .sala-cuenta{
+    margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;
+    color:var(--humo);font-variant-numeric:tabular-nums;
+  }
+  .sala-cuenta b{font-weight:400;color:var(--tinta)}
+  .sala-cuenta i{font-style:normal;margin:0 5px;opacity:.5}
+  .sala-guia{
+    margin:0;justify-self:end;
+    font-family:var(--f-mono);font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--humo);
+    transition:opacity var(--t-suave) var(--ease-salida);
+  }
+  /* apenas diste el primer paso, la instrucción sobra */
+  .sala-paso.andando .sala-guia{opacity:0}
+  .sala-riel{
+    grid-column:1 / -1;margin:0;position:relative;
+    height:1px;background:var(--linea);overflow:hidden;
+  }
+  .sala-riel i{
+    position:absolute;inset:0;display:block;background:var(--tinta);
+    transform:scaleX(0);transform-origin:0 50%;
+  }
+
+  .sala-grilla{
+    columns:auto;column-gap:normal;
+    display:flex;flex-wrap:nowrap;
+    overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scroll-padding-inline:var(--pad);
+    padding:0 var(--pad) 6px;
+    scrollbar-width:none;
+  }
+  .sala-grilla::-webkit-scrollbar{display:none}
+
+  .sala-obra{
+    flex:0 0 auto;width:min(76vw,330px);
+    margin:0 12px 0 0;
+    /* imantado por el borde de arranque y no por el centro: la obra que
+       estás mirando queda pegada al margen izquierdo, siempre en el mismo
+       lugar, y la siguiente asoma. Centrado, la primera y la última nunca
+       llegan a su punto y la cuenta miente. */
+    scroll-snap-align:start;
+    gap:11px;
+    /* el JS le pone escala y opacidad según lo lejos del centro que esté:
+       lo que mirás está adelante y el resto se corre para atrás */
+    /* la escala se toma del borde izquierdo, que es donde imanta */
+    transform-origin:0 46%;
+    will-change:transform,opacity;
+  }
+  .sala-obra img{
+    aspect-ratio:4 / 5;object-fit:cover;height:auto;
+    background:var(--realce);
+  }
+  .sala-obra b{font-size:9.5px}
+  .sala-obra span{font-size:13.5px;line-height:1.35}
+
+  /* el remate: después de la última obra, la salida de la sala */
+  .sala-fin{
+    display:flex;flex:0 0 auto;
+    width:min(58vw,250px);margin:0;
+    scroll-snap-align:start;
+    flex-direction:column;justify-content:flex-end;gap:7px;
+    aspect-ratio:4 / 5;padding:20px;
+    border:1px solid var(--linea-fuerte);
+    background:var(--realce);
+  }
+  .sala-fin b{
+    font-family:var(--f-mono);font-weight:400;font-size:9.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--humo);
+  }
+  .sala-fin span{
+    font-family:var(--f-display);font-weight:300;
+    font-size:21px;line-height:1.1;letter-spacing:-.018em;
+  }
+
+  /* ═══ 06 · VISITAR y pie ═══ */
+  .visitar{padding:78px var(--pad) 70px}
+  .pie{padding-bottom:calc(46px + env(safe-area-inset-bottom))}
+
+  /* ═══ el toque: todo lo que se puede tocar responde ═══ */
+  .ficha:active,.sala-obra:active,.sala-fin:active,
+  .dato a:active,.indice-lista a:active,.lugar-foto-abrir:active{
+    transform:scale(.985);
+  }
+  .ficha,.sala-fin,.dato a,.indice-lista a,.lugar-foto-abrir{
+    transition:transform var(--t-toque) var(--ease-salida);
+  }
+}
+
+/* Fuera del teléfono nada de esto existe. Va en su propio media query y no
+   como regla suelta: suelta, al estar más abajo que el bloque de celular, le
+   ganaría por orden y escondería la planta y el riel en el teléfono. */
+@media (min-width:768px){
+  .planta,.sala-fin,.barra-menu,.indice-hoja{display:none}
+}
+.indice-hoja[hidden]{display:none !important}
+
+/* ── el trazado de la planta ──
+   Arranca a los 2 s: el umbral dura 1,85 s y no tiene sentido dibujar
+   abajo de la cortina. No depende del JS — si main.js no llegara a correr,
+   la planta se dibuja igual. */
+@media (max-width:767px) and (prefers-reduced-motion:no-preference){
+  /* los destinos entran uno atrás de otro, de arriba hacia abajo */
+  .indice-lista li{
+    opacity:0;transform:translate3d(0,12px,0);
+    transition:opacity .3s var(--ease-salida), transform .42s var(--ease-salida);
+  }
+  .indice-hoja.abierta .indice-lista li{opacity:1;transform:none}
+  .indice-lista li:nth-child(1){transition-delay:.03s}
+  .indice-lista li:nth-child(2){transition-delay:.07s}
+  .indice-lista li:nth-child(3){transition-delay:.11s}
+  .indice-lista li:nth-child(4){transition-delay:.15s}
+  .indice-lista li:nth-child(5){transition-delay:.19s}
+  .indice-lista li:nth-child(6){transition-delay:.23s}
+  .indice-pie{
+    opacity:0;transition:opacity .3s var(--ease-salida) .26s;
+  }
+  .indice-hoja.abierta .indice-pie{opacity:1}
+
+  .js .planta path{
+    stroke-dasharray:1;stroke-dashoffset:1;
+    animation:trazo 1.35s var(--ease-salida) forwards;
+    animation-delay:calc(2s + var(--i) * .03s);
+  }
+  .planta-gira{animation:gira 120s linear infinite}
+}
+@keyframes trazo{to{stroke-dashoffset:0}}
