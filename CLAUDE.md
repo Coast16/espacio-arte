@@ -613,6 +613,24 @@ un script creado a mano arranca en async, y así `main.js` podría correr antes
 que GSAP. Con `async = false` se ejecutan en el orden en que se agregan. El
 bloque va al final del `<body>`, así que cuando corre el DOM ya está entero.
 
+**El ancho se mira dos veces, y esto no es opcional.** Si la ventana arranca
+angosta —media pantalla, el navegador de una laptop chica, devtools acoplado
+al costado— y después se agranda, hay que pedir los cuatro archivos ahí. El
+bloque del HTML escucha el `change` del media query y avisa con un evento
+`3d-listo`; `main.js` lo escucha y prende la portada, la marca y el pasillo.
+
+Sin esa segunda oportunidad, agrandar la ventana dejaba la versión de
+escritorio **sin ninguna de sus tres escenas y sin forma de recuperarlas salvo
+recargando**: el póster plano encima del título y, peor, el hueco de la marca
+completamente vacío, porque de 900 px para arriba el CSS esconde el respaldo
+plano esperando un canvas que nunca iba a llegar. Se veía roto, y lo estaba.
+
+El reintento por `resize` que ya vivía adentro de `main.js` no alcanzaba: de
+nada sirve reintentar el `init` si el archivo nunca se bajó. Por eso ahora el
+reintento está en los dos escalones. Y `encenderMarca()` pone `.sin3d` cuando
+el módulo no está —todavía o nunca—, así lo peor que puede pasar es que se vea
+el logo plano en vez de un hueco.
+
 ### La planta del redondel (`.planta`)
 
 Es el isotipo de la Plaza dibujado en línea: 6 anillos, 8 cuñas y el aro del

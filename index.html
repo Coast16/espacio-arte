@@ -586,24 +586,49 @@
      body, así que cuando corre el DOM ya está entero. -->
 <script>
 (function () {
-  var lista = [
+  var BASE = [
     "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js",
     "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js",
     "https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"
   ];
-  if (matchMedia("(min-width: 768px)").matches &&
-      !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    lista.push(
-      "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js",
-      "js/redondel.js", "js/ruedo.js", "js/recorrido.js");
-  }
-  lista.push("js/main.js");
-  lista.forEach(function (src) {
+  var TRESD = [
+    "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js",
+    "js/redondel.js", "js/ruedo.js", "js/recorrido.js"
+  ];
+  var ancha = matchMedia("(min-width: 768px)");
+  var quieto = matchMedia("(prefers-reduced-motion: reduce)");
+  var pedido = false;
+
+  function meter(src, alCargar) {
     var s = document.createElement("script");
     s.src = src;
-    s.async = false;
+    s.async = false;          // async=false = se ejecutan en el orden en que se agregan
+    if (alCargar) s.onload = alCargar;
     document.head.appendChild(s);
-  });
+  }
+
+  var lista = BASE.slice();
+  if (ancha.matches && !quieto.matches) { pedido = true; lista = lista.concat(TRESD); }
+  lista.push("js/main.js");
+  lista.forEach(function (src) { meter(src, null); });
+
+  /* Y si la ventana recién ahora da el ancho, se piden acá.
+     Sin esta segunda oportunidad, una ventana que arrancaba angosta y después
+     se agrandaba dejaba la versión de escritorio SIN NINGUNA de sus escenas
+     —portada, marca y pasillo— y sin forma de recuperarlas salvo recargando.
+     Es el reintento que ya existía adentro de main.js, pero un escalón más
+     abajo: de nada sirve reintentar el init si el archivo nunca se bajó. */
+  function pedirTarde() {
+    if (pedido || !ancha.matches || quieto.matches) return;
+    pedido = true;
+    TRESD.forEach(function (src, i) {
+      meter(src, i === TRESD.length - 1 ? function () {
+        document.dispatchEvent(new CustomEvent("3d-listo"));
+      } : null);
+    });
+  }
+  if (ancha.addEventListener) ancha.addEventListener("change", pedirTarde);
+  else if (ancha.addListener) ancha.addListener(pedirTarde);   // Safari viejo
 })();
 </script>
 </body>

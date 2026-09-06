@@ -127,9 +127,15 @@
   /* ═══════ el volumen de la portada ═══════ */
   var lienzo = document.getElementById("lienzo");
   var hay3d = false;
-  if (lienzo && window.Redondel && !menosMovimiento) {
+
+  /* Función y no una sola línea: el módulo puede llegar tarde (ver el evento
+     "3d-listo" más abajo) y entonces hay que poder prenderlo de nuevo. */
+  function encenderPortada() {
+    if (hay3d || !lienzo || !window.Redondel || menosMovimiento) return false;
     hay3d = window.Redondel.init(lienzo);
+    return hay3d;
   }
+  encenderPortada();
 
   // el volumen se arma mientras se abren las hojas, no después
   abrirUmbral(function () { if (hay3d) window.Redondel.entrar(); });
@@ -149,11 +155,16 @@
   var anchaParaMarca = window.matchMedia("(min-width: 900px)");
 
   function encenderMarca() {
-    if (hayRuedo || !lienzoRuedo || !window.Ruedo) return;
+    if (hayRuedo || !lienzoRuedo) return;
     if (menosMovimiento || !anchaParaMarca.matches) return;
+    /* El módulo puede no estar todavía (ventana que arrancó angosta) o no
+       llegar nunca (CDN caída). En los dos casos hay que mostrar el plano:
+       de 900 px para arriba el CSS lo esconde esperando al canvas, así que
+       sin esto la columna de la marca queda como un hueco vacío. */
+    if (!window.Ruedo) { lienzoRuedo.parentNode.classList.add("sin3d"); return; }
     hayRuedo = window.Ruedo.init(lienzoRuedo);
     // sin WebGL vuelve el archivo plano: el CSS lo esconde salvo con .sin3d
-    if (!hayRuedo) lienzoRuedo.parentNode.classList.add("sin3d");
+    lienzoRuedo.parentNode.classList.toggle("sin3d", !hayRuedo);
   }
   encenderMarca();
   if (anchaParaMarca.addEventListener) {
@@ -201,6 +212,25 @@
     ScrollTrigger.refresh();
     return true;
   }
+
+  /* El 3D puede llegar tarde. Si la ventana arrancó angosta, Three.js y los
+     tres módulos ni se descargaron; cuando se agranda, el bloque de <script>
+     del final del HTML los pide y avisa por acá.
+
+     Sin esto, agrandar la ventana dejaba la versión de escritorio sin ninguna
+     de sus tres escenas y sin forma de recuperarlas salvo recargando: la
+     portada mostraba el póster plano encima del título y el hueco de la marca
+     quedaba vacío, porque de 900 px para arriba el respaldo plano está
+     escondido esperando al canvas. */
+  document.addEventListener("3d-listo", function () {
+    if (encenderPortada()) window.Redondel.entrar();
+    encenderMarca();
+    // el pasillo se arma con una timeline: sin GSAP no hay nada que prender
+    if (!hayGsap) return;
+    encenderSala();
+    engancharRecorrido();
+    ScrollTrigger.refresh();
+  });
 
   /* ── la grilla de obras: cada foto entra cuando está lista ──
      Es la vista principal en celular. Va ANTES del corte por GSAP: el CSS
@@ -480,6 +510,16 @@
      `abrirVisor` queda afuera, en vez de estar atado al callback del 3D. */
   var abrirVisor = null;
 
+  /* El pasillo 3D avisa por acá cuando tocás una obra. Va en una función
+     suelta porque el módulo puede aparecer DESPUÉS del visor: si la ventana
+     arrancó angosta, recorrido.js recién llega cuando se agranda. */
+  function engancharRecorrido() {
+    if (!window.Recorrido || !abrirVisor) return;
+    window.Recorrido.alClic = function (d, ruta) {
+      abrirVisor(ruta + d.f, d.m, d.t);
+    };
+  }
+
   function armarVisor() {
     var visor = document.getElementById("visor");
     if (!visor) return;
@@ -505,11 +545,7 @@
         { y: 0, autoAlpha: 1, duration: 0.55, ease: "expo.out" });
     };
 
-    if (window.Recorrido) {
-      window.Recorrido.alClic = function (d, ruta) {
-        abrirVisor(ruta + d.f, d.m, d.t);
-      };
-    }
+    engancharRecorrido();
 
     function cerrarVisor() {
       if (visor.hidden) return;
@@ -897,14 +933,20 @@
   mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", function () {
 
     /* 01 · portada — el scroll arma el volumen (el pin lo hace el CSS sticky) */
+    /* El trigger se crea aunque el volumen todavía no esté: el guard va
+       adentro del onUpdate. Si se creara solo cuando hay3d ya es true, un
+       volumen que llega tarde —ventana que arrancó angosta— se quedaba sin
+       nadie que lo moviera con el scroll. */
     var portada = document.querySelector(".portada");
-    if (portada && hay3d) {
+    if (portada) {
       ScrollTrigger.create({
         trigger: portada,
         start: "top top",
         end: "bottom bottom",
         scrub: 1,
-        onUpdate: function (self) { window.Redondel.progreso(self.progress); }
+        onUpdate: function (self) {
+          if (hay3d) window.Redondel.progreso(self.progress);
+        }
       });
     }
 
