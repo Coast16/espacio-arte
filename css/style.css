@@ -17,6 +17,7 @@
   --fondo:#F4F2ED;
   --realce:#FCFBF8;
   --tinta:#101216;
+  --tinta-rgb:16,18,22;        /* la misma tinta, para sombras con alfa */
   --humo:#62666E;   /* 4,9:1 sobre cal — con #6E727A daba 4,31 y el eyebrow va en 11 px */
   --linea:rgba(16,18,22,.16);
   --linea-fuerte:rgba(16,18,22,.34);
@@ -43,6 +44,7 @@
   --fondo:#0A0B0D;
   --realce:#14161A;
   --tinta:#F2F0EB;
+  --tinta-rgb:242,240,235;
   --humo:#8E9299;
   --linea:rgba(242,240,235,.17);
   --linea-fuerte:rgba(242,240,235,.36);
@@ -566,8 +568,21 @@ html.js .umbral{animation:none}
 .lt{display:inline-block;transform-origin:0 100%;will-change:transform}
 .rotulo .eyebrow{will-change:clip-path}
 
-/* ── acuse de recibo al pasar la mano ── */
+/* ── acuse de recibo al pasar la mano ──
+   Cerca de la mano la tinta se humedece: las palabras partidas (.lt, .pl)
+   reciben --cerca de 0 a 1 según la distancia (main.js, campoDeTinta) y
+   les crece una sombra difusa del color de la tinta. Se pone en una clase
+   aparte para que las lejanas no paguen una sombra de alfa cero. Y lo que
+   se puede tocar se levanta apenas al pasar. */
+.lt.cerca,.pl.cerca{
+  text-shadow:0 0 calc(var(--cerca,0) * 12px) rgba(var(--tinta-rgb),calc(var(--cerca,0) * .65));
+}
 @media (hover:hover) and (pointer:fine){
+  .cifra dd,.cinta-grupo b,.dato dt,.ficha-fecha,.pie-logo{transition:transform var(--t-suave) var(--ease-salida),color var(--t-toque) ease}
+  .cifra:hover dd{transform:translateY(-4px)}
+  .cinta-grupo b:hover{transform:translateY(-4px)}
+  .dato:hover dt,.ficha:hover .ficha-fecha{color:var(--tinta)}
+  .pie-logo:hover{transform:scale(1.03)}
   .ficha:hover{opacity:1}
   .ficha:hover .ficha-titulo{transform:translateX(6px)}
   /* el enlace se subraya en tinta de izquierda a derecha, encima de su
@@ -608,20 +623,26 @@ html.js .umbral{animation:none}
    cualquier `scale` propio del mismo elemento. */
 .mira-anillo,.mira-punto,.mira-rotulo{position:absolute;top:0;left:0;width:0;height:0;will-change:transform}
 .mira-anillo i,.mira-punto i,.mira-rotulo i{position:absolute;display:block}
+/* Tenue y difusa a pedido de Mathias: el anillo al 55 % y apenas borroso,
+   el punto es un halo con degradado en vez de un disco duro. Sigue siendo
+   blanco por diferencia, así que "55 %" es medio gris sobre cal. */
 .mira-anillo i{
   width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;
-  border:1px solid #fff;box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.55);box-sizing:border-box;
+  filter:blur(.6px);
   transition:transform .32s var(--ease-salida),border-color .2s ease;
 }
-.mira-punto i{width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:#fff;
+.mira-punto i{width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.85),rgba(255,255,255,0) 70%);
+  filter:blur(.8px);
   transition:transform .2s var(--ease-salida),opacity .2s ease}
 .mira-rotulo i{
   margin:16px 0 0 -40px;width:80px;text-align:center;font-style:normal;
   font-family:var(--f-mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
-  color:#fff;opacity:0;transform:translateY(6px);
+  color:rgba(255,255,255,.85);opacity:0;transform:translateY(6px);
   transition:opacity .22s ease,transform .22s var(--ease-salida);
 }
-.mira.sobre .mira-anillo i{transform:scale(1.9);border-color:rgba(255,255,255,.9)}
+.mira.sobre .mira-anillo i{transform:scale(1.9);border-color:rgba(255,255,255,.75)}
 .mira.sobre .mira-punto i{transform:scale(0);opacity:0}
 .mira.con-rotulo .mira-anillo i{transform:scale(2.3)}
 .mira.con-rotulo .mira-rotulo i{opacity:1;transform:translateY(20px)}

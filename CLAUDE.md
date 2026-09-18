@@ -461,7 +461,7 @@ bloque de celular; `encenderTinta()` y `armarMira()` miran `punteroFino`).
   pantalla completa: cada capa con `mix-blend-mode` es un pase de mezcla
   por cuadro, así que conviene una sola.
 - **El polvo.** En el mismo lienzo, un segundo programa de `gl.POINTS`:
-  motas que la mano levanta al pasar. Se emiten **por distancia** (cada 7
+  motas que la mano levanta al pasar. Se emiten **por distancia** (cada 9
   px de recorrido, tope 14 por cuadro), no por tiempo: un barrido rápido no
   deja huecos y una mano quieta no amontona. Pila fija de 420 en la GPU, la
   edad se calcula en el vertex shader, los buffers se suben solo cuando
@@ -470,7 +470,9 @@ bloque de celular; `encenderTinta()` y `armarMira()` miran `punteroFino`).
   a cal y tinta. En la portada no emite: ahí el polvo ya lo levanta el haz
   de luz del 3D (`redondel.js`) y dos polvos eran una nube.
 - **La mira (`#mira`, `armarMira()` en main.js).** El cursor. Un anillo de
-  28 px con borde de 1 px y un punto de 4 px, blancos por diferencia. El
+  28 px con borde de 1 px al 55 % y apenas borroso (`blur(.6px)`), y un
+  punto que es un halo con degradado de 10 px; blancos por diferencia.
+  Mathias la pidió "menos intensa y más difuminada" que la primera. El
   punto va pegado a la mano (`quickTo` 0,1 s) y el anillo llega después
   (0,3 s). Sobre cualquier `a`, `button`, `[role=button]` (se escucha
   `pointerover` en el documento, no enlace por enlace) el anillo se abre
@@ -482,6 +484,18 @@ bloque de celular; `encenderTinta()` y `armarMira()` miran `punteroFino`).
   **Trampa:** GSAP mueve el `span` de afuera (x/y) y el CSS escala la `<i>`
   de adentro. Al escribir un `transform`, GSAP pone `scale:none` en línea y
   pisaría cualquier `scale` propio del mismo elemento.
+- **El campo de tinta (`campoDeTinta()`).** "Cuando el cursor se acerca a
+  cualquier cosa, una mínima interacción con lo que toca": cada cuadro se
+  miden los 8 bloques de texto partido (títulos `.lt`, párrafos `.pl`, la
+  firma) y, solo para los que están bajo la mano, sus palabras; a las que
+  quedan a menos de 110 px se les escribe `--cerca` (0–1, al cuadrado) y
+  la clase `.cerca`, y el CSS les pone una sombra difusa del color de la
+  tinta: la tinta se humedece cerca de la mano. La sombra vive en la clase
+  para que cientos de palabras lejanas no paguen una sombra de alfa cero.
+  Se leen todas las medidas antes de escribir un solo estilo. Y en CSS, lo
+  que se puede tocar responde al pasar: las cifras y los nombres de la
+  cinta se levantan 4 px, los rótulos de los datos y las fechas de las
+  fichas pasan a tinta, el logo del pie crece 3 %.
 - **Antes había una gota de goma (metaballs) copiada de chelabs.dev.**
   Mathias la sacó por parecida a la referencia; está en el historial
   (`9f79b4d`… `cf7f652`) si hiciera falta volver.

@@ -1150,6 +1150,54 @@
     window.addEventListener("pointercancel", function () { mira.apretar(false); }, { passive: true });
   }
 
+  /* ── el campo de tinta: lo que está cerca de la mano se humedece ──
+     Cada cuadro se mira qué bloques de texto partido (títulos .lt, párrafos
+     .pl) están bajo la mano, y a sus palabras se les escribe --cerca de 0 a
+     1 según la distancia. La sombra la pone el CSS. Primero se leen todas
+     las medidas y después se escriben todos los estilos: mezclarlos obliga
+     al navegador a recalcular el layout una vez por palabra. Los bloques se
+     miden (8 rectángulos) antes que las palabras (cientos): la mayoría de
+     los cuadros no hay ningún bloque cerca y no se toca nada. */
+  function campoDeTinta() {
+    if (menosMovimiento || !punteroFino || mmChico.matches) return;
+    var RADIO = 110; // px alrededor de la mano
+    var bloques = gsap.utils.toArray("[data-lineas], [data-encender], .manifiesto-cols, .pie-marca");
+    var palabrasDe = bloques.map(function (b) { return Array.prototype.slice.call(b.querySelectorAll(".lt, .pl")); });
+    if (!palabrasDe.some(function (l) { return l.length; })) return;
+    var mano = { x: -1e4, y: -1e4 };
+    window.addEventListener("pointermove", function (e) { mano.x = e.clientX; mano.y = e.clientY; }, { passive: true });
+    document.documentElement.addEventListener("pointerleave", function () { mano.x = mano.y = -1e4; });
+    var mojadas = []; // las que tienen --cerca puesto, para secarlas
+    gsap.ticker.add(function () {
+      var cerca = [];
+      for (var i = 0; i < bloques.length; i++) {
+        var r = bloques[i].getBoundingClientRect();
+        if (r.bottom < -RADIO || r.top > window.innerHeight + RADIO) continue; // fuera de pantalla
+        if (mano.x < r.left - RADIO || mano.x > r.right + RADIO || mano.y < r.top - RADIO || mano.y > r.bottom + RADIO) continue;
+        var lista = palabrasDe[i];
+        for (var j = 0; j < lista.length; j++) {
+          var q = lista[j].getBoundingClientRect();
+          var dx = mano.x - (q.left + q.width / 2), dy = mano.y - (q.top + q.height / 2);
+          var d = Math.hypot(dx, dy);
+          if (d < RADIO) cerca.push({ el: lista[j], v: 1 - d / RADIO });
+        }
+      }
+      // secar las que ya no están cerca
+      for (var k = 0; k < mojadas.length; k++) {
+        var m = mojadas[k], sigue = false;
+        for (var n = 0; n < cerca.length; n++) if (cerca[n].el === m) { sigue = true; break; }
+        if (!sigue) { m.classList.remove("cerca"); m.style.removeProperty("--cerca"); }
+      }
+      mojadas = [];
+      for (var c = 0; c < cerca.length; c++) {
+        var w = cerca[c];
+        w.el.classList.add("cerca");
+        w.el.style.setProperty("--cerca", (w.v * w.v).toFixed(3)); // al cuadrado: cae rápido lejos de la mano
+        mojadas.push(w.el);
+      }
+    });
+  }
+
   /* ── enlaces imantados ──
      Los enlaces de la barra y los datos se corren unos px hacia la mano
      cuando pasa cerca, y vuelven con un rebote corto al irse. Solo con
@@ -1220,6 +1268,7 @@
   // la mira acusa recibo de lo que se puede tocar, y los enlaces la imantan
   armarMira();
   imantar();
+  campoDeTinta();
   profundidadPortada();
 
   /* Las escenas 3D se prenden al cargar Y al agrandar la ventana.

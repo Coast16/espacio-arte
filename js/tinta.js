@@ -25,11 +25,11 @@
   var GRANO = 0.045;       // grano de la hoja: 0 lo apaga; arriba de .08 se ve sucio
   var LUZ = 0.05;          // la sombra de los arcos que recorre la cal: 0 la apaga
   var VINETA = 0.045;      // los bordes de la hoja, apenas más oscuros que el centro
-  var PASO = 7;            // px de recorrido entre mota y mota
+  var PASO = 9;            // px de recorrido entre mota y mota
   var TOPE_CUADRO = 14;    // motas como mucho por cuadro: un salto de pestaña no vacía la pila
   var PILA = 420;          // motas vivas a la vez
   var VIDA = 1.3;          // s que dura cada mota
-  var TAMANO = [1.1, 2.4]; // radio en px de pantalla, al azar entre estos
+  var TAMANO = [1.4, 3.0]; // radio en px de pantalla, al azar entre estos
   var SUBE = 34;           // px/s que sube el polvo
   var DPR_MAX = 1.5;       // más que esto no se nota y cuesta el doble
 
@@ -111,7 +111,7 @@
     "varying float vAlfa;",
     "void main(){",
     "  float d = length(gl_PointCoord - 0.5) * 2.0;",
-    "  float a = (1.0 - smoothstep(0.55, 1.0, d)) * vAlfa * 0.75;",
+    "  float a = (1.0 - smoothstep(0.25, 1.0, d)) * vAlfa * 0.42;",
     "  gl_FragColor = vec4(a, a, a, a);",
     "}"
   ].join("\n");
