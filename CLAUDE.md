@@ -433,9 +433,12 @@ piezas se materializan desde el negro a medida que te acercás.
   **Clic**: se abre el visor (`#visor`), que es DOM común — cierra con Esc, con
   el botón o con clic afuera, devuelve el foco y frena Lenis mientras está
   abierto.
-- **La linterna (`.luz`) se apaga adentro del recorrido**, y la gota de tinta
-  se encoge a un tercio: estás dentro de la escena, no mirándola de afuera, y
-  una gota de 70 px tapaba las obras chicas del fondo del pasillo.
+- **La linterna (`.luz`) se apaga adentro del recorrido**: estás dentro de la
+  escena, no mirándola de afuera.
+- **El cartel nombra la obra que tenés enfrente o la que viene.** Se mide
+  contra un punto 1,9 adelante de la cámara. Con la regla anterior ("la más
+  cercana que no haya quedado más de 0,5 atrás"), al frenar frente a la última
+  obra el cartel decía la anterior (50/51 mirando la 51).
 
 El scrub va contra un objeto intermedio (`paso`), no contra un ScrollTrigger
 pelado: un trigger sin animación **no interpola su propio `progress`**, así que
@@ -904,6 +907,23 @@ poder leerse sin una sola animación.
   saca una hoja de contactos y se mira dónde queda el último panel.
 - **Los pies de las obras del recorrido describen lo que se ve en la foto.** No
   son fichas: no hay autor ni fecha para ninguna de esas piezas todavía.
+- **Los apoyos (`#apoyos`, al final de *Visitar*).** Las diez marcas del
+  cartel de *Gente en Obra* (Instagram, 8/6/2026), en su orden. Cada logo es
+  una **máscara CSS** (`mask-image` con el archivo, `background:
+  currentColor`): el archivo da la forma y la hoja el color, así los diez
+  quedan en humo y pasan a tinta al pasar la mano. `--ratio` (ancho/alto
+  del archivo) y `--alto` (altura de cada uno, para emparejar el peso
+  visual) van en el HTML. Fuentes: SVG oficiales de Sancor Seguros, Montes
+  del Plata, Dazzler y S34 (de sus sitios); PNG oficial de la Intendencia
+  de Colonia y de Red Psi; Uruguay Natural e Itaú desde Wikimedia Commons
+  (Itaú se dejó como cuadrado redondeado con el texto calado, como en el
+  cartel). **RO Contenidos y Cultus.uy salen del cartel a baja resolución**
+  (no tienen sitio ni logo público): hay que pedirle los originales a Laura
+  y reemplazar `assets/logos/rocontenidos.png` y `cultus.png`.
+  Trampa: una `url()` relativa dentro de una variable CSS Chrome la resuelve
+  contra la hoja que la USA (`css/`), no contra el HTML; por eso las rutas
+  van desde la raíz (`/assets/logos/…`). Entran en cascada con el scroll
+  (`revelarApoyos()`).
 - **Fechas y fichas de artista** de las cinco muestras del archivo.
 - **Horarios** y si Espacio Arte tiene mail y teléfono propios.
 - **Licencia web de la tipografía Noah** (Fontfabric). La que hay es de
