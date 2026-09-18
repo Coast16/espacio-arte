@@ -437,6 +437,31 @@ a{color:inherit;text-decoration:none}
 .visitar{padding:clamp(90px,11vw,165px) var(--pad) clamp(70px,10vw,150px);background:var(--fondo)}
 .visitar-grid{display:grid;gap:clamp(32px,5vw,72px);grid-template-columns:1fr}
 @media(min-width:900px){.visitar-grid{grid-template-columns:1fr 1fr}}
+
+/* ── con el apoyo de ──
+   Diez marcas en un solo color: cada logo es una máscara (mask-image con
+   el archivo) pintada con currentColor. Descansan en humo y pasan a tinta
+   al pasar la mano, levantándose apenas. --ratio y --alto vienen del HTML. */
+.apoyos{margin-top:clamp(64px,8vw,120px);display:flex;flex-direction:column;gap:clamp(26px,3.4vw,44px)}
+.apoyos-lista{
+  list-style:none;margin:0;padding:0;
+  display:flex;flex-wrap:wrap;align-items:center;
+  gap:clamp(22px,3vw,40px) clamp(28px,4vw,64px);
+}
+.apoyo{display:inline-flex;align-items:center;color:var(--humo);
+  transition:color var(--t-toque) ease,transform var(--t-suave) var(--ease-salida)}
+.apoyo-marca{
+  display:block;height:var(--alto,32px);width:calc(var(--alto,32px) * var(--ratio,3));
+  background:currentColor;
+  -webkit-mask:var(--marca) center / contain no-repeat;mask:var(--marca) center / contain no-repeat;
+}
+@media (hover:hover) and (pointer:fine){
+  a.apoyo:hover{color:var(--tinta);transform:translateY(-3px)}
+}
+@media(max-width:767px){
+  .apoyos-lista{gap:22px 28px}
+  .apoyo-marca{height:calc(var(--alto,32px) * .78);width:calc(var(--alto,32px) * .78 * var(--ratio,3))}
+}
 .datos{margin:0;display:flex;flex-direction:column}
 .dato{
   padding:18px 0;border-top:1px solid var(--linea);

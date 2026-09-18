@@ -677,6 +677,38 @@
       <div class="dato dato-ancho" data-revelar-item><dt>¿Sos artista y querés exponer?</dt><dd>Escribinos por Instagram y contanos qué tenés en mente. La sala cambia varias veces al año.</dd></div>
     </dl>
   </div>
+
+  <!-- ══ Con el apoyo de ══
+       Las marcas del cartel de Gente en Obra (Instagram, 8/6/2026), en el orden
+       del cartel. Cada logo es una máscara: el archivo (SVG o PNG con alfa) da
+       la forma y el CSS lo pinta del color de la tinta, así los diez quedan
+       en un solo color como pide la hoja. --ratio es ancho/alto del archivo y
+       --alto la altura de cada uno, para emparejar el peso visual.
+       Las rutas van desde la raíz (/assets/…): una url() relativa dentro de
+       una variable CSS Chrome la resuelve contra la hoja de estilos que la
+       usa (css/), no contra el HTML, y daba css/assets/… → 404.
+       Fuentes: sitios oficiales de cada marca (SVG cuando lo había) y
+       Wikimedia Commons (Uruguay Natural, Itaú). RO Contenidos y Cultus.uy
+       salen del cartel a baja resolución: hay que pedirle los originales a
+       Laura y reemplazarlos. -->
+  <div class="apoyos" id="apoyos">
+    <div class="rotulo">
+      <i class="regla" data-regla aria-hidden="true"></i>
+      <p class="eyebrow">Con el apoyo de</p>
+    </div>
+    <ul class="apoyos-lista">
+      <li><a class="apoyo" href="https://www.colonia.gub.uy/" target="_blank" rel="noopener" aria-label="Intendencia de Colonia"><i class="apoyo-marca" style="--marca:url(/assets/logos/colonia.png);--ratio:3.98;--alto:34px"></i></a></li>
+      <li><a class="apoyo" href="https://uruguaynatural.com/" target="_blank" rel="noopener" aria-label="Uruguay Natural · Ministerio de Turismo"><i class="apoyo-marca" style="--marca:url(/assets/logos/uruguay-natural.png);--ratio:3.64;--alto:38px"></i></a></li>
+      <li><a class="apoyo" href="https://www.sancorseguros.com.uy/" target="_blank" rel="noopener" aria-label="Sancor Seguros"><i class="apoyo-marca" style="--marca:url(/assets/logos/sancor.svg);--ratio:3.12;--alto:36px"></i></a></li>
+      <li><a class="apoyo" href="https://www.itau.com.uy/" target="_blank" rel="noopener" aria-label="Itaú"><i class="apoyo-marca" style="--marca:url(/assets/logos/itau.png);--ratio:1;--alto:40px"></i></a></li>
+      <li><a class="apoyo" href="https://www.montesdelplata.com.uy/" target="_blank" rel="noopener" aria-label="Montes del Plata"><i class="apoyo-marca" style="--marca:url(/assets/logos/montes.svg);--ratio:7.06;--alto:26px"></i></a></li>
+      <li><a class="apoyo" href="https://www.wyndhamhotels.com/dazzler" target="_blank" rel="noopener" aria-label="Dazzler by Wyndham"><i class="apoyo-marca" style="--marca:url(/assets/logos/dazzler.svg);--ratio:2.72;--alto:34px"></i></a></li>
+      <li><a class="apoyo" href="https://sur34gin.com/" target="_blank" rel="noopener" aria-label="S34 Gin"><i class="apoyo-marca" style="--marca:url(/assets/logos/s34.svg);--ratio:4.23;--alto:30px"></i></a></li>
+      <li><span class="apoyo" role="img" aria-label="RO Contenidos"><i class="apoyo-marca" style="--marca:url(/assets/logos/rocontenidos.png);--ratio:3.62;--alto:26px"></i></span></li>
+      <li><a class="apoyo" href="https://www.redpsi.uy/" target="_blank" rel="noopener" aria-label="Red Psi"><i class="apoyo-marca" style="--marca:url(/assets/logos/redpsi.png);--ratio:1.38;--alto:44px"></i></a></li>
+      <li><span class="apoyo" role="img" aria-label="Cultus.uy"><i class="apoyo-marca" style="--marca:url(/assets/logos/cultus.png);--ratio:4.98;--alto:26px"></i></span></li>
+    </ul>
+  </div>
 </section>
 
 </main>

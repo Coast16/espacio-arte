@@ -1062,6 +1062,29 @@
     };
   });
 
+  /* ── con el apoyo de: las marcas entran una por una ──
+     En escritorio atadas al scroll (suben y se encienden en cascada; si
+     volvés, se apagan); en celular entran una vez. */
+  function revelarApoyos() {
+    var lista = document.querySelector(".apoyos-lista");
+    if (!lista || menosMovimiento) return;
+    var marcas = lista.querySelectorAll(".apoyo");
+    if (!marcas.length) return;
+    if (mmChico.matches) {
+      gsap.from(marcas, {
+        y: 18, autoAlpha: 0, duration: 0.8, ease: "power4.out", stagger: 0.05,
+        scrollTrigger: { trigger: lista, start: "top 88%", once: true }
+      });
+      return;
+    }
+    gsap.fromTo(marcas,
+      { y: 22, autoAlpha: 0 },
+      {
+        y: 0, autoAlpha: 1, ease: "none", stagger: { amount: 0.6 },
+        scrollTrigger: { trigger: lista, start: "top 94%", end: "top 58%", scrub: 0.5 }
+      });
+  }
+
   /* ── la firma del pie ──
      En escritorio, letra por letra y atada al scroll: termina de escribirse
      justo cuando la página llega al final. En celular sube de una vez. */
@@ -1264,6 +1287,7 @@
 
   // la marca grande del pie sube desde el borde
   firmarPie();
+  revelarApoyos();
 
   // la mira acusa recibo de lo que se puede tocar, y los enlaces la imantan
   armarMira();
