@@ -301,8 +301,14 @@ window.Recorrido = (function () {
       u.marco.opacity = 0.3 + u.avance * 0.55;
       u.mat.opacity = u.mat.map ? (0.14 + u.entrada * 0.86) : 1;
 
-      // el cartel nombra la obra a la que te estás acercando, no la que dejaste
-      if (d > -0.5 && d < mejor) { mejor = d; cambio = i; }
+      /* El cartel nombra la obra que tenés enfrente o la que viene, no la
+         que dejaste. Se mide contra un punto 1,9 adelante de la cámara: al
+         final del paseo la cámara frena a FRENTE (3) de la última obra y la
+         anterior queda a -0,3; con la regla vieja ("la más cercana que no
+         haya quedado más de 0,5 atrás") el cartel decía la anterior mientras
+         mirabas la última. */
+      var dd = Math.abs(d - 1.9);
+      if (dd < mejor) { mejor = dd; cambio = i; }
     }
 
     if (cambio !== -1 && cambio !== estado.actual) {
