@@ -680,7 +680,10 @@ html.js .umbral{animation:none}
 .recorrido{position:relative;background:var(--fondo)}
 .recorrido-pin{display:none}
 
-.recorrido.hay3d{height:660vh}
+/* El largo del paseo crece con la cantidad de obras: 22,75vh por obra,
+   que con las 29 originales daba los 660vh con los que se afinó el ritmo.
+   main.js escribe --obras al prender la sala. */
+.recorrido.hay3d{--obras:29;height:calc(var(--obras) * 22.75vh)}
 .recorrido.hay3d .sala-lista{display:none}
 .recorrido.hay3d .recorrido-pin{
   display:block;height:100vh;position:sticky;top:0;overflow:hidden;

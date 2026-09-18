@@ -194,6 +194,8 @@
     if (!haySala) return false;
 
     seccionSala.classList.add("hay3d");
+    // el paseo mide según cuántas obras cuelgan: si no, sumar fotos lo acelera
+    seccionSala.style.setProperty("--obras", String(window.Recorrido.obras.length));
     armarHud();
     apagarLuzEnSala();
     guiarUnaVez();
