@@ -1070,6 +1070,8 @@
     if (!lista || menosMovimiento) return;
     var marcas = lista.querySelectorAll(".apoyo");
     if (!marcas.length) return;
+    // en escritorio los estandartes bajan del alambre (armarEstandartes)
+    if (!mmChico.matches) return;
     if (mmChico.matches) {
       gsap.from(marcas, {
         y: 18, autoAlpha: 0, duration: 0.8, ease: "power4.out", stagger: 0.05,
@@ -1083,6 +1085,116 @@
         y: 0, autoAlpha: 1, ease: "none", stagger: { amount: 0.6 },
         scrollTrigger: { trigger: lista, start: "top 94%", end: "top 58%", scrub: 0.5 }
       });
+  }
+
+  /* ── los estandartes: las marcas cuelgan alrededor del ruedo ──
+     Un aro CSS 3D que gira solo, despacio (una vuelta cada 70 s), se
+     arrastra con la mano (con inercia) y se frena mientras la mano está
+     encima. El que queda enfrente se enciende y dice su nombre abajo; al
+     entrar en pantalla bajan del alambre uno por uno. Con el teclado, el
+     estandarte enfocado gira hasta ponerse enfrente. */
+  function armarEstandartes() {
+    var escena = document.getElementById("apoyosEscena");
+    var aro = document.getElementById("apoyosAnillo");
+    var nombre = document.getElementById("apoyosNombre");
+    var guia = document.getElementById("apoyosGuia");
+    if (!escena || !aro || mmChico.matches) return;
+    var items = Array.prototype.slice.call(aro.children);
+    var angulos = items.map(function (li) { return parseFloat(li.style.getPropertyValue("--a")) || 0; });
+    var VUELTA = 360 / 70;            // grados por segundo, girando solo
+    var est = { giro: 0, vel: 0, arrastra: false, sobre: false, ultimoDedo: 0, x0: 0, giro0: 0, movio: 0, foco: -1, vivo: false };
+    var ponerNombre = nombre ? hacerVolteador(nombre, 0.12, 0.28) : function () {};
+
+    function pintar(dt) {
+      if (!est.arrastra) {
+        if (Math.abs(est.vel) > 0.02) {
+          est.giro += est.vel * dt * 60;
+          est.vel *= Math.pow(0.93, dt * 60);           // inercia que se apaga
+        } else if (!est.sobre && !menosMovimiento) {
+          est.giro += VUELTA * dt;                        // gira solo
+        }
+      }
+      est.giro = ((est.giro % 360) + 360) % 360;
+      aro.style.setProperty("--giro", est.giro.toFixed(2));
+      var mejor = -2, cual = -1;
+      for (var i = 0; i < items.length; i++) {
+        var rad = (angulos[i] + est.giro) * Math.PI / 180;
+        var prof = (Math.cos(rad) + 1) / 2;               // 1 enfrente, 0 atrás
+        items[i].style.setProperty("--prof", prof.toFixed(3));
+        if (prof > mejor) { mejor = prof; cual = i; }
+      }
+      if (cual !== est.foco) {
+        est.foco = cual;
+        items.forEach(function (li, i) { li.classList.toggle("enfrente", i === cual); });
+        var el = items[cual].querySelector(".apoyo");
+        ponerNombre(el ? el.getAttribute("data-nombre") || "" : "");
+      }
+    }
+
+    // solo trabaja mientras está en pantalla
+    var io = new IntersectionObserver(function (e) { est.vivo = e[0].isIntersecting; }, { rootMargin: "80px" });
+    io.observe(escena);
+    gsap.ticker.add(function (t, delta) { if (est.vivo) pintar(Math.min(delta, 50) / 1000); });
+    pintar(0);
+
+    /* arrastre: horizontal gira; vertical sigue siendo scroll (touch-action) */
+    escena.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+      est.arrastra = true; est.movio = 0; est.x0 = e.clientX; est.giro0 = est.giro; est.vel = 0;
+      est.ultimoDedo = e.clientX;
+      escena.classList.add("arrastrando");
+      try { escena.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    escena.addEventListener("pointermove", function (e) {
+      if (!est.arrastra) return;
+      var dx = e.clientX - est.x0;
+      est.movio = Math.max(est.movio, Math.abs(dx));
+      est.giro = est.giro0 + dx * 0.32;                  // 0,32° por px
+      est.vel = clamp(-9, 9, (e.clientX - est.ultimoDedo) * 0.32); // un latigazo no lo manda a dar tres vueltas
+      est.ultimoDedo = e.clientX;
+    });
+    function soltar() {
+      if (!est.arrastra) return;
+      est.arrastra = false;
+      escena.classList.remove("arrastrando");
+      if (menosMovimiento) est.vel = 0;
+      if (est.movio > 6 && guia) guia.classList.add("fuera");
+    }
+    escena.addEventListener("pointerup", soltar);
+    escena.addEventListener("pointercancel", soltar);
+    // un arrastre no es un clic: si la mano se movió, el enlace no abre
+    aro.addEventListener("click", function (e) {
+      if (est.movio > 6) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    // con la mano encima se frena, para poder leer y elegir
+    aro.addEventListener("pointerover", function () { est.sobre = true; });
+    aro.addEventListener("pointerout", function (e) {
+      if (!aro.contains(e.relatedTarget)) est.sobre = false;
+    });
+
+    // teclado: el estandarte que recibe el foco gira hasta quedar enfrente
+    aro.addEventListener("focusin", function (e) {
+      var li = e.target.closest("li");
+      if (!li) return;
+      var a = parseFloat(li.style.getPropertyValue("--a")) || 0;
+      var meta = ((-a % 360) + 360) % 360;
+      var d = meta - est.giro;
+      if (d > 180) d -= 360; if (d < -180) d += 360;
+      est.vel = 0; est.sobre = true;
+      gsap.to(est, { giro: est.giro + d, duration: menosMovimiento ? 0 : 0.8, ease: "power3.out" });
+    });
+    aro.addEventListener("focusout", function (e) {
+      if (!aro.contains(e.relatedTarget)) est.sobre = false;
+    });
+
+    // bajan del alambre uno por uno al entrar en pantalla
+    if (!menosMovimiento) {
+      gsap.from(items.map(function (li) { return li.querySelector(".apoyo"); }), {
+        y: -60, autoAlpha: 0, duration: 1.1, ease: "power4.out", stagger: 0.07,
+        scrollTrigger: { trigger: escena, start: "top 80%", once: true }
+      });
+    }
   }
 
   /* ── la firma del pie ──
@@ -1290,6 +1402,7 @@
   // la marca grande del pie sube desde el borde
   firmarPie();
   revelarApoyos();
+  armarEstandartes();
 
   // la mira acusa recibo de lo que se puede tocar, y los enlaces la imantan
   armarMira();

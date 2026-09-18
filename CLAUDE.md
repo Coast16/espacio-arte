@@ -922,13 +922,34 @@ poder leerse sin una sola animación.
   y reemplazar `assets/logos/rocontenidos.png` y `cultus.png`.
   Trampa: una `url()` relativa dentro de una variable CSS Chrome la resuelve
   contra la hoja que la USA (`css/`), no contra el HTML; por eso las rutas
-  van desde la raíz (`/assets/logos/…`). Entran en cascada con el scroll
-  (`revelarApoyos()`) y **la mano las despierta**: `campoDeTinta()` también
-  mide `.apoyos-lista` (radio 170 px, `data-radio`) y les escribe `--cerca`;
-  con eso cada marca sube hasta 8 px, crece 5 % y pasa de humo a tinta de
-  forma continua (`color-mix`), así al barrer la fila se levantan en ola.
-  Al pasar la mano aparece el nombre debajo (`::after` con `data-nombre`).
-  GSAP anima el `<a>` (entrada) y el CSS la `<i>` de adentro: no se pisan.
+  van desde la raíz (`/assets/logos/…`).
+- **En escritorio son "los estandartes"** (`armarEstandartes()`, CSS bajo
+  `@media (min-width:768px)`): las diez marcas cuelgan de un alambre
+  alrededor del ruedo, con la planta del redondel tumbada en el piso
+  (`.apoyos-piso`, los mismos 26 arcos de la planta del celular, `rotateX
+  76°`). Es CSS 3D sin Three: la lista es el aro (`--giro`, que escribe JS
+  cada cuadro), cada `<li>` va a su ángulo con `rotateY(a+giro)
+  translateZ(r) rotateY(-(a+giro))` —el último giro lo deja siempre de
+  frente; sin él los del fondo se leían al revés— y el aro se ve un poco
+  desde arriba (`rotateX(-16deg)`) para que los de atrás queden más altos y
+  no se pisen con los de adelante. `--prof` (cos del ángulo, 0 atrás y 1
+  enfrente) da opacidad y color: el que queda enfrente se enciende en tinta
+  y su nombre baja al centro (`#apoyosNombre`, con el volteador). Gira solo
+  una vuelta cada 70 s, se frena con la mano encima, **se arrastra** (0,32°
+  por px, inercia que se apaga, velocidad capada a ±9°/cuadro) y un
+  arrastre de más de 6 px no cuenta como clic (se ataja en captura). Con el
+  teclado, el estandarte enfocado gira hasta ponerse enfrente. Al entrar en
+  pantalla bajan del alambre uno por uno. Solo trabaja mientras está en
+  pantalla (`IntersectionObserver`). `touch-action: pan-y`: en una tablet el
+  arrastre horizontal gira y el vertical sigue siendo scroll.
+  En celular la misma lista es la fila de siempre.
+- Además **la mano las despierta**: `campoDeTinta()` también mide
+  `.apoyos-lista` (radio 170 px, `data-radio`) y les escribe `--cerca`; con
+  eso cada marca sube hasta 8 px y pasa a tinta de forma continua
+  (`color-mix`). GSAP anima el `<a>` (entrada), el CSS 3D el `<li>` y el
+  campo la `<i>` de adentro: tres transforms en tres elementos, no se pisan.
+  El nombre bajo cada marca (`::after` con `data-nombre`) queda solo para la
+  fila de celular; en el aro va al centro.
 - **Una sola numeración de escenas.** Los rótulos ("01 — El lugar" …
   "05 — Visitar") y el índice del celular (00 Portada … 05 Visitar) cuentan
   la portada como 00. La barra (`data-escena`, `#indiceNum`) contaba desde

@@ -473,6 +473,70 @@ a{color:inherit;text-decoration:none}
   .apoyo:hover::after,.apoyo:focus-visible::after{opacity:1;transform:none}
 }
 a.apoyo:active .apoyo-marca{transform:translateY(-2px) scale(.96)}
+
+/* ── los estandartes (escritorio) ──
+   Las diez marcas cuelgan alrededor del ruedo. Es CSS 3D: la lista es el
+   aro (rotateY según --giro, que escribe main.js), cada <li> se pone en su
+   ángulo con rotateY(a) translateZ(r) y se vuelve a girar -a para mirar
+   siempre al frente (si no, los del fondo se verían al revés). La planta del
+   redondel tumbada (rotateX 80°) es el piso. --prof (0 atrás, 1 enfrente) lo
+   escribe main.js cada cuadro: da la opacidad y el color de cada uno. */
+.apoyos-foco,.apoyos-guia,.apoyos-piso{display:none}
+@media (min-width:768px){
+  .apoyos-escena{
+    position:relative;height:clamp(420px,60vh,600px);
+    perspective:1200px;perspective-origin:50% 30%;
+    touch-action:pan-y;user-select:none;-webkit-user-select:none;
+    cursor:grab;
+  }
+  .apoyos-escena.arrastrando{cursor:grabbing}
+  .apoyos-piso{
+    display:block;position:absolute;left:50%;top:50%;width:calc(var(--r) * 2.4);height:auto;
+    margin-left:calc(var(--r) * -1.2);margin-top:calc(var(--r) * -1.2);
+    transform:translateY(110px) rotateX(76deg) rotate(180deg);
+    color:var(--tinta);opacity:.26;pointer-events:none;
+  }
+  .piso-anillo{fill:none;stroke:currentColor;stroke-width:.006}
+  .piso-cuna{fill:currentColor;opacity:.22}
+  .apoyos-escena{--r:min(34vw,340px)}
+  /* el aro se ve un poco desde arriba: los de atrás quedan más altos y
+     más chicos, y no se pisan con los de adelante */
+  .apoyos-lista{
+    position:absolute;inset:0;display:block;margin:0;padding:0;
+    transform-style:preserve-3d;transform:rotateX(-16deg);
+  }
+  .apoyos-lista > li{
+    position:absolute;left:50%;top:50%;
+    transform-style:preserve-3d;
+    transform:translate(-50%,-50%)
+              rotateY(calc((var(--a,0) + var(--giro,0)) * 1deg))
+              translateZ(var(--r))
+              rotateY(calc((var(--a,0) + var(--giro,0)) * -1deg));
+    opacity:calc(.22 + .78 * var(--prof,1));
+    will-change:transform,opacity;
+  }
+  .apoyos-lista > li .apoyo-marca{
+    color:color-mix(in srgb,var(--tinta) calc(max(var(--prof,0) * var(--prof,0) * 100%, var(--cerca,0) * 100%)),var(--humo));
+  }
+  /* el alambre del que cuelga cada estandarte, como las obras del pasillo */
+  .apoyos-lista > li .apoyo::before{
+    content:"";position:absolute;left:50%;bottom:calc(100% + 10px);width:1px;height:96px;
+    background:linear-gradient(to top,var(--linea-fuerte),transparent);
+  }
+  .apoyos-lista > li .apoyo::after{display:none} /* el nombre va en el centro, abajo */
+  .apoyos-foco{
+    display:block;margin:0;text-align:center;
+    font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--tinta);min-height:1.4em;
+  }
+  .apoyos-foco .ml{height:1.3em}
+  .apoyos-guia{
+    display:block;margin:10px 0 0;text-align:center;
+    font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--humo);transition:opacity .6s ease;
+  }
+  .apoyos-guia.fuera{opacity:0}
+}
 @media(max-width:767px){
   .apoyos-lista{gap:22px 28px}
   .apoyo-marca{height:calc(var(--alto,32px) * .78);width:calc(var(--alto,32px) * .78 * var(--ratio,3))}
