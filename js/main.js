@@ -1183,9 +1183,10 @@
      los cuadros no hay ningún bloque cerca y no se toca nada. */
   function campoDeTinta() {
     if (menosMovimiento || !punteroFino || mmChico.matches) return;
-    var RADIO = 110; // px alrededor de la mano
-    var bloques = gsap.utils.toArray("[data-lineas], [data-encender], .manifiesto-cols, .pie-marca");
-    var palabrasDe = bloques.map(function (b) { return Array.prototype.slice.call(b.querySelectorAll(".lt, .pl")); });
+    var RADIO_BASE = 110; // px alrededor de la mano; un bloque puede pedir otro con data-radio
+    var bloques = gsap.utils.toArray("[data-lineas], [data-encender], .manifiesto-cols, .pie-marca, .apoyos-lista");
+    var radios = bloques.map(function (b) { return parseFloat(b.dataset.radio) || RADIO_BASE; });
+    var palabrasDe = bloques.map(function (b) { return Array.prototype.slice.call(b.querySelectorAll(".lt, .pl, .apoyo-marca")); });
     if (!palabrasDe.some(function (l) { return l.length; })) return;
     var mano = { x: -1e4, y: -1e4 };
     window.addEventListener("pointermove", function (e) { mano.x = e.clientX; mano.y = e.clientY; }, { passive: true });
@@ -1194,6 +1195,7 @@
     gsap.ticker.add(function () {
       var cerca = [];
       for (var i = 0; i < bloques.length; i++) {
+        var RADIO = radios[i];
         var r = bloques[i].getBoundingClientRect();
         if (r.bottom < -RADIO || r.top > window.innerHeight + RADIO) continue; // fuera de pantalla
         if (mano.x < r.left - RADIO || mano.x > r.right + RADIO || mano.y < r.top - RADIO || mano.y > r.bottom + RADIO) continue;

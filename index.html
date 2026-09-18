@@ -58,7 +58,7 @@
     <a href="#muestras"><span class="nt"><span>Muestras</span><span aria-hidden="true">Muestras</span></span></a>
     <a href="#visitar"><span class="nt"><span>Visitar</span><span aria-hidden="true">Visitar</span></span></a>
   </nav>
-  <p class="indice" aria-hidden="true"><span class="ml"><span class="ln" id="indiceNum">01</span></span></p>
+  <p class="indice" aria-hidden="true"><span class="ml"><span class="ln" id="indiceNum">00</span></span></p>
   <div class="ruedo" aria-hidden="true"><i id="ruedoFill"></i></div>
   <!-- CELULAR · abre el índice. En pantalla grande la nav de la barra ya
        está, así que el botón no se muestra. -->
@@ -89,7 +89,7 @@
 <main id="contenido">
 
 <!-- ══════════ 01 · PORTADA ══════════ -->
-<section class="portada" id="portada" data-escena="01">
+<section class="portada" id="portada" data-escena="00">
   <div class="portada-pin">
     <canvas id="lienzo" aria-hidden="true"></canvas>
     <img class="portada-poster" src="assets/logo-vertical.png" alt="" aria-hidden="true">
@@ -150,7 +150,7 @@
 <!-- ══════════ 02 · EL LUGAR ══════════
      Dos bandas: arriba el texto con la marca de la Plaza girando al costado,
      abajo la foto de la sala contra el remate del texto. -->
-<section class="lugar" id="lugar" data-escena="02">
+<section class="lugar" id="lugar" data-escena="01">
 
   <div class="lugar-cuerpo">
     <div class="lugar-decir">
@@ -200,7 +200,7 @@
 <!-- ══════════ 03 · QUÉ ES ══════════ -->
 <!-- TEXTO PROVISORIO: redactado a partir de datos verificados del predio y de las
      muestras relevadas. Falta el texto institucional de Laura para reemplazarlo. -->
-<section class="manifiesto" id="manifiesto" data-escena="03">
+<section class="manifiesto" id="manifiesto" data-escena="02">
   <div class="rotulo">
     <i class="regla" data-regla aria-hidden="true"></i>
     <p class="eyebrow">02 — Qué es</p>
@@ -224,7 +224,7 @@
 </div>
 
 <!-- ══════════ 04 · MUESTRAS ══════════ -->
-<section class="muestras invertido hoja" id="muestras" data-escena="04">
+<section class="muestras invertido hoja" id="muestras" data-escena="03">
   <div class="archivo">
     <div class="archivo-texto">
       <div class="rotulo">
@@ -319,7 +319,7 @@
 </section>
 
 <!-- ══════════ 05 · EL RECORRIDO ══════════ -->
-<section class="recorrido hoja" id="recorrido" data-escena="05">
+<section class="recorrido hoja" id="recorrido" data-escena="04">
   <div class="recorrido-pin">
     <canvas id="sala" aria-hidden="true"></canvas>
 
@@ -660,7 +660,7 @@
 </section>
 
 <!-- ══════════ 06 · VISITAR ══════════ -->
-<section class="visitar hoja" id="visitar" data-escena="06">
+<section class="visitar hoja" id="visitar" data-escena="05">
   <div class="visitar-grid">
     <div>
       <div class="rotulo">
@@ -696,17 +696,17 @@
       <i class="regla" data-regla aria-hidden="true"></i>
       <p class="eyebrow">Con el apoyo de</p>
     </div>
-    <ul class="apoyos-lista">
-      <li><a class="apoyo" href="https://www.colonia.gub.uy/" target="_blank" rel="noopener" aria-label="Intendencia de Colonia"><i class="apoyo-marca" style="--marca:url(/assets/logos/colonia.png);--ratio:3.98;--alto:34px"></i></a></li>
-      <li><a class="apoyo" href="https://uruguaynatural.com/" target="_blank" rel="noopener" aria-label="Uruguay Natural · Ministerio de Turismo"><i class="apoyo-marca" style="--marca:url(/assets/logos/uruguay-natural.png);--ratio:3.64;--alto:38px"></i></a></li>
-      <li><a class="apoyo" href="https://www.sancorseguros.com.uy/" target="_blank" rel="noopener" aria-label="Sancor Seguros"><i class="apoyo-marca" style="--marca:url(/assets/logos/sancor.svg);--ratio:3.12;--alto:36px"></i></a></li>
-      <li><a class="apoyo" href="https://www.itau.com.uy/" target="_blank" rel="noopener" aria-label="Itaú"><i class="apoyo-marca" style="--marca:url(/assets/logos/itau.png);--ratio:1;--alto:40px"></i></a></li>
-      <li><a class="apoyo" href="https://www.montesdelplata.com.uy/" target="_blank" rel="noopener" aria-label="Montes del Plata"><i class="apoyo-marca" style="--marca:url(/assets/logos/montes.svg);--ratio:7.06;--alto:26px"></i></a></li>
-      <li><a class="apoyo" href="https://www.wyndhamhotels.com/dazzler" target="_blank" rel="noopener" aria-label="Dazzler by Wyndham"><i class="apoyo-marca" style="--marca:url(/assets/logos/dazzler.svg);--ratio:2.72;--alto:34px"></i></a></li>
-      <li><a class="apoyo" href="https://sur34gin.com/" target="_blank" rel="noopener" aria-label="S34 Gin"><i class="apoyo-marca" style="--marca:url(/assets/logos/s34.svg);--ratio:4.23;--alto:30px"></i></a></li>
-      <li><span class="apoyo" role="img" aria-label="RO Contenidos"><i class="apoyo-marca" style="--marca:url(/assets/logos/rocontenidos.png);--ratio:3.62;--alto:26px"></i></span></li>
-      <li><a class="apoyo" href="https://www.redpsi.uy/" target="_blank" rel="noopener" aria-label="Red Psi"><i class="apoyo-marca" style="--marca:url(/assets/logos/redpsi.png);--ratio:1.38;--alto:44px"></i></a></li>
-      <li><span class="apoyo" role="img" aria-label="Cultus.uy"><i class="apoyo-marca" style="--marca:url(/assets/logos/cultus.png);--ratio:4.98;--alto:26px"></i></span></li>
+    <ul class="apoyos-lista" data-radio="170">
+      <li><a class="apoyo" data-nombre="Intendencia de Colonia" href="https://www.colonia.gub.uy/" target="_blank" rel="noopener" aria-label="Intendencia de Colonia"><i class="apoyo-marca" style="--marca:url(/assets/logos/colonia.png);--ratio:3.98;--alto:34px"></i></a></li>
+      <li><a class="apoyo" data-nombre="Uruguay Natural" href="https://uruguaynatural.com/" target="_blank" rel="noopener" aria-label="Uruguay Natural · Ministerio de Turismo"><i class="apoyo-marca" style="--marca:url(/assets/logos/uruguay-natural.png);--ratio:3.64;--alto:38px"></i></a></li>
+      <li><a class="apoyo" data-nombre="Sancor Seguros" href="https://www.sancorseguros.com.uy/" target="_blank" rel="noopener" aria-label="Sancor Seguros"><i class="apoyo-marca" style="--marca:url(/assets/logos/sancor.svg);--ratio:3.12;--alto:36px"></i></a></li>
+      <li><a class="apoyo" data-nombre="Itaú" href="https://www.itau.com.uy/" target="_blank" rel="noopener" aria-label="Itaú"><i class="apoyo-marca" style="--marca:url(/assets/logos/itau.png);--ratio:1;--alto:40px"></i></a></li>
+      <li><a class="apoyo" data-nombre="Montes del Plata" href="https://www.montesdelplata.com.uy/" target="_blank" rel="noopener" aria-label="Montes del Plata"><i class="apoyo-marca" style="--marca:url(/assets/logos/montes.svg);--ratio:7.06;--alto:26px"></i></a></li>
+      <li><a class="apoyo" data-nombre="Dazzler by Wyndham" href="https://www.wyndhamhotels.com/dazzler" target="_blank" rel="noopener" aria-label="Dazzler by Wyndham"><i class="apoyo-marca" style="--marca:url(/assets/logos/dazzler.svg);--ratio:2.72;--alto:34px"></i></a></li>
+      <li><a class="apoyo" data-nombre="S34 Gin" href="https://sur34gin.com/" target="_blank" rel="noopener" aria-label="S34 Gin"><i class="apoyo-marca" style="--marca:url(/assets/logos/s34.svg);--ratio:4.23;--alto:30px"></i></a></li>
+      <li><span class="apoyo" data-nombre="RO Contenidos" role="img" aria-label="RO Contenidos"><i class="apoyo-marca" style="--marca:url(/assets/logos/rocontenidos.png);--ratio:3.62;--alto:26px"></i></span></li>
+      <li><a class="apoyo" data-nombre="Red Psi" href="https://www.redpsi.uy/" target="_blank" rel="noopener" aria-label="Red Psi"><i class="apoyo-marca" style="--marca:url(/assets/logos/redpsi.png);--ratio:1.38;--alto:44px"></i></a></li>
+      <li><span class="apoyo" data-nombre="Cultus.uy" role="img" aria-label="Cultus.uy"><i class="apoyo-marca" style="--marca:url(/assets/logos/cultus.png);--ratio:4.98;--alto:26px"></i></span></li>
     </ul>
   </div>
 </section>

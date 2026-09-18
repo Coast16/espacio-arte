@@ -448,16 +448,31 @@ a{color:inherit;text-decoration:none}
   display:flex;flex-wrap:wrap;align-items:center;
   gap:clamp(22px,3vw,40px) clamp(28px,4vw,64px);
 }
-.apoyo{display:inline-flex;align-items:center;color:var(--humo);
-  transition:color var(--t-toque) ease,transform var(--t-suave) var(--ease-salida)}
+/* La mano las despierta: main.js (campoDeTinta) les escribe --cerca de 0 a 1
+   según la distancia al puntero, dentro de 170 px. Con eso cada marca sube
+   hasta 8 px y pasa de humo a tinta de forma continua: al barrer la fila con
+   el mouse se levantan en ola, como teclas. GSAP anima el <a> (entrada);
+   el CSS mueve la <i> de adentro, así no se pisan. */
+.apoyo{position:relative;display:inline-flex;align-items:center;color:var(--humo)}
 .apoyo-marca{
   display:block;height:var(--alto,32px);width:calc(var(--alto,32px) * var(--ratio,3));
+  color:color-mix(in srgb,var(--tinta) calc(var(--cerca,0) * 100%),var(--humo));
   background:currentColor;
   -webkit-mask:var(--marca) center / contain no-repeat;mask:var(--marca) center / contain no-repeat;
+  transform:translateY(calc(var(--cerca,0) * -8px)) scale(calc(1 + var(--cerca,0) * .05));
+  transition:transform .14s ease-out,color .14s ease-out;
+}
+/* el nombre aparece debajo al pasar la mano o al enfocar con el teclado */
+.apoyo::after{
+  content:attr(data-nombre);position:absolute;left:0;top:100%;margin-top:9px;white-space:nowrap;
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta);
+  opacity:0;transform:translateY(4px);pointer-events:none;
+  transition:opacity var(--t-toque) ease,transform var(--t-toque) var(--ease-salida);
 }
 @media (hover:hover) and (pointer:fine){
-  a.apoyo:hover{color:var(--tinta);transform:translateY(-3px)}
+  .apoyo:hover::after,.apoyo:focus-visible::after{opacity:1;transform:none}
 }
+a.apoyo:active .apoyo-marca{transform:translateY(-2px) scale(.96)}
 @media(max-width:767px){
   .apoyos-lista{gap:22px 28px}
   .apoyo-marca{height:calc(var(--alto,32px) * .78);width:calc(var(--alto,32px) * .78 * var(--ratio,3))}

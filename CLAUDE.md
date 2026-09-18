@@ -923,7 +923,18 @@ poder leerse sin una sola animación.
   Trampa: una `url()` relativa dentro de una variable CSS Chrome la resuelve
   contra la hoja que la USA (`css/`), no contra el HTML; por eso las rutas
   van desde la raíz (`/assets/logos/…`). Entran en cascada con el scroll
-  (`revelarApoyos()`).
+  (`revelarApoyos()`) y **la mano las despierta**: `campoDeTinta()` también
+  mide `.apoyos-lista` (radio 170 px, `data-radio`) y les escribe `--cerca`;
+  con eso cada marca sube hasta 8 px, crece 5 % y pasa de humo a tinta de
+  forma continua (`color-mix`), así al barrer la fila se levantan en ola.
+  Al pasar la mano aparece el nombre debajo (`::after` con `data-nombre`).
+  GSAP anima el `<a>` (entrada) y el CSS la `<i>` de adentro: no se pisan.
+- **Una sola numeración de escenas.** Los rótulos ("01 — El lugar" …
+  "05 — Visitar") y el índice del celular (00 Portada … 05 Visitar) cuentan
+  la portada como 00. La barra (`data-escena`, `#indiceNum`) contaba desde
+  01 y en el pasillo decía 05 mientras el rótulo decía 04: Mathias lo vio
+  como "el 4 está mal". Ahora `data-escena` va de 00 a 05 y la barra arranca
+  en 00.
 - **Fechas y fichas de artista** de las cinco muestras del archivo.
 - **Horarios** y si Espacio Arte tiene mail y teléfono propios.
 - **Licencia web de la tipografía Noah** (Fontfabric). La que hay es de
