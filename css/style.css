@@ -297,47 +297,20 @@ a{color:inherit;text-decoration:none}
   .lugar-marca:not(.sin3d) .lugar-marca-plana{display:none}
 }
 
-/* ── la foto de la sala ── */
-.lugar-foto{margin:0;display:flex;flex-direction:column;gap:12px}
-.lugar-foto-abrir{
-  appearance:none;border:0;padding:0;margin:0;background:none;
-  display:block;width:100%;position:relative;cursor:zoom-in;
-  color:inherit;font:inherit;text-align:left;
+/* ── ciento once años, contados ──
+   El año enorme entre las dos declaraciones. Números tabulares: al contar
+   de 1912 a 2021 no puede saltar de ancho. La línea se dibuja con scaleX
+   desde la izquierda (main.js, contarAnios). */
+.lugar-anios{
+  margin:0;display:flex;flex-direction:column;gap:clamp(10px,1.2vw,16px);
+  max-width:26ch;
 }
-/* el marco recorta y la foto se mueve adentro: la sensación de capas es
-   que el contenido y su ventana no van pegados */
-.lugar-foto-marco{
-  display:block;overflow:hidden;position:relative;
-  aspect-ratio:3/2;border:1px solid var(--linea);
-  background:var(--realce);
+.lugar-anios-n{
+  display:block;font-family:var(--f-display);font-weight:300;
+  font-size:clamp(84px,13vw,196px);line-height:.92;letter-spacing:-.035em;
+  font-variant-numeric:tabular-nums;color:var(--tinta);will-change:transform,opacity;
 }
-.lugar-foto img{
-  width:100%;height:100%;object-fit:cover;
-  transform:scale(1.06) translate3d(var(--dx,0),var(--dy,0),0);
-  transition:transform var(--t-suave) var(--ease-salida);
-}
-.lugar-foto-lupa{
-  position:absolute;left:14px;bottom:14px;z-index:2;
-  padding:8px 12px;min-height:34px;display:inline-flex;align-items:center;
-  background:rgba(var(--velo),.92);border:1px solid var(--linea-fuerte);
-  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--tinta);
-  opacity:0;transform:translateY(6px);
-  transition:opacity var(--t-toque) var(--ease-salida),
-             transform var(--t-toque) var(--ease-salida);
-}
-@media (hover:hover) and (pointer:fine){
-  .lugar-foto-abrir:hover .lugar-foto-lupa,
-  .lugar-foto-abrir:focus-visible .lugar-foto-lupa{opacity:1;transform:none}
-}
-/* en touch no hay hover: el cartel se ve siempre, si no nada avisa que se abre */
-@media (hover:none){.lugar-foto-lupa{opacity:1;transform:none}}
-.lugar-foto-abrir:active .lugar-foto-marco{transform:scale(.99)}
-.lugar-foto-marco{transition:transform var(--t-toque) var(--ease-salida)}
-.lugar-foto figcaption{
-  font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--humo);line-height:1.5;
-}
+.lugar-anios-linea{display:block;height:1px;background:var(--linea-fuerte);transform-origin:0 50%}
 
 .cifras{
   margin:0;display:flex;flex-wrap:wrap;
@@ -621,6 +594,44 @@ html.js .umbral{animation:none}
 }
 .tinta.lista{opacity:1}
 
+/* ── la mira: el cursor ──
+   Un anillo fino y un punto, blancos por diferencia: tinta sobre cal, cal
+   sobre tinta. El punto va pegado a la mano y el anillo llega después
+   (main.js, armarMira). Sobre algo que se puede tocar el anillo se abre y
+   el punto se apaga; si el elemento dice data-mira, el rótulo lo cuenta.
+   Mientras la mira está viva la flecha del sistema se esconde. */
+.mira{position:fixed;inset:0;z-index:110;pointer-events:none;mix-blend-mode:difference;
+  opacity:0;transition:opacity .35s ease}
+.mira.viva{opacity:1}
+/* GSAP mueve el span de afuera (x/y) y el CSS escala la <i> de adentro:
+   al escribir un transform, GSAP pone `scale:none` en línea y pisaría
+   cualquier `scale` propio del mismo elemento. */
+.mira-anillo,.mira-punto,.mira-rotulo{position:absolute;top:0;left:0;width:0;height:0;will-change:transform}
+.mira-anillo i,.mira-punto i,.mira-rotulo i{position:absolute;display:block}
+.mira-anillo i{
+  width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;
+  border:1px solid #fff;box-sizing:border-box;
+  transition:transform .32s var(--ease-salida),border-color .2s ease;
+}
+.mira-punto i{width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:#fff;
+  transition:transform .2s var(--ease-salida),opacity .2s ease}
+.mira-rotulo i{
+  margin:16px 0 0 -40px;width:80px;text-align:center;font-style:normal;
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:#fff;opacity:0;transform:translateY(6px);
+  transition:opacity .22s ease,transform .22s var(--ease-salida);
+}
+.mira.sobre .mira-anillo i{transform:scale(1.9);border-color:rgba(255,255,255,.9)}
+.mira.sobre .mira-punto i{transform:scale(0);opacity:0}
+.mira.con-rotulo .mira-anillo i{transform:scale(2.3)}
+.mira.con-rotulo .mira-rotulo i{opacity:1;transform:translateY(20px)}
+.mira.apretada .mira-anillo i{transform:scale(.8)}
+.mira.sobre.apretada .mira-anillo i{transform:scale(1.55)}
+@media (hover:hover) and (pointer:fine){
+  html.con-mira,html.con-mira body,html.con-mira a,html.con-mira button,html.con-mira [role=button],
+  html.con-mira canvas{cursor:none !important}
+}
+
 /* ── barra: hover con máscara + índice de escena ── */
 .nt{display:block;overflow:hidden;height:1.05em;position:relative}
 .nt span{display:block;transition:transform var(--t-toque) var(--ease-salida)}
@@ -674,7 +685,7 @@ html.js .umbral{animation:none}
 
 /* ── celular: la capa de movimiento, simple ── */
 @media(max-width:767px){
-  .luz,.tinta{display:none}
+  .luz,.tinta,.mira{display:none}
   .cinta-grupo b{font-size:22px}
   .recorrido.hay3d{height:auto}
   .recorrido.hay3d .recorrido-pin{display:none}
@@ -686,7 +697,7 @@ html.js .umbral{animation:none}
 /* ── movimiento reducido ── */
 @media (prefers-reduced-motion:reduce){
   .umbral{display:none}
-  .luz,.tinta{display:none}
+  .luz,.tinta,.mira{display:none}
   .nt span{transition:none}
   .pl{opacity:1}
   .cinta-riel{transform:none !important}
@@ -1131,10 +1142,10 @@ html.js .umbral{animation:none}
 
   /* ═══ el toque: todo lo que se puede tocar responde ═══ */
   .ficha:active,.sala-obra:active,.sala-fin:active,
-  .dato a:active,.indice-lista a:active,.lugar-foto-abrir:active{
+  .dato a:active,.indice-lista a:active{
     transform:scale(.985);
   }
-  .ficha,.sala-fin,.dato a,.indice-lista a,.lugar-foto-abrir{
+  .ficha,.sala-fin,.dato a,.indice-lista a{
     transition:transform var(--t-toque) var(--ease-salida);
   }
 }

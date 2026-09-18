@@ -1,57 +1,59 @@
 /* ═══════════════════════════════════════════════════════════
-   Espacio Arte — la gota de tinta (el cursor)
-   Tres gotas que se funden entre sí siguen al puntero, cada una un
-   poco más lenta que la anterior, y cuando la mano va rápido la cola
-   suelta gotitas que caen y se apagan. Se dibuja en un lienzo WebGL a
-   pantalla completa que la hoja mezcla con mix-blend-mode:difference,
-   y se pinta SIEMPRE en blanco: sobre la cal se ve tinta, sobre la
-   tinta se ve cal, y sobre una foto la da vuelta como un negativo.
-   Así no hay que preguntarle al fondo de qué color es.
+   Espacio Arte — la hoja y el polvo
+   Un lienzo WebGL fijo a pantalla completa que la página mezcla con
+   mix-blend-mode:difference y que se pinta SIEMPRE en blanco: sobre la
+   cal oscurece, sobre la tinta aclara, sobre una foto da vuelta. Dibuja
+   dos cosas:
 
-   Solo escritorio: puntero fino y sin "reducir movimiento". main.js
-   decide si se prende y cuándo se encoge (adentro de la sala).
+   1. LA HOJA: el grano, la sombra de los arcos que recorre la pared y la
+      viñeta de los bordes. Un solo cuadrado de pantalla completa.
+   2. EL POLVO: motas que la mano levanta al pasar. Se emiten por
+      distancia recorrida (no por tiempo: un barrido rápido no deja
+      huecos y una mano quieta no amontona), viven en una pila fija de
+      puntos en la GPU y vuelan en el vertex shader. Es el mismo polvo
+      que flota en el haz de luz de la portada (js/redondel.js): la mano
+      lo levanta de la pared.
+
+   El cursor propiamente dicho —la mira: un anillo y un punto— es DOM y
+   vive en main.js (armarMira). Solo escritorio con puntero fino y sin
+   "reducir movimiento".
    ═══════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
 
-  /* Los números que mandan (en px de pantalla, sin el zoom del display) */
-  var CABEZA = 30, MEDIO = 21, COLA = 13;   // radios en reposo
-  var VEL_CABEZA = 14, VEL_MEDIO = 10, VEL_COLA = 8; // cuánto crecen con la velocidad
-  var SIGUE_CABEZA = 0.32, SIGUE_MEDIO = 0.17, SIGUE_COLA = 0.11; // qué tan pegadas van
-  var ENCOGIDA = 0.3;      // escala adentro de la sala: una gota chica que no tapa obras
-  var MAX_GOTAS = 10;      // gotitas sueltas a la vez (16 formas en total en el shader)
+  /* Los números que mandan */
   var GRANO = 0.045;       // grano de la hoja: 0 lo apaga; arriba de .08 se ve sucio
   var LUZ = 0.05;          // la sombra de los arcos que recorre la cal: 0 la apaga
   var VINETA = 0.045;      // los bordes de la hoja, apenas más oscuros que el centro
-  var SOBRE = 0.5;         // cuánto crece la gota sobre un enlace (+50 %)
-  var APRETADA = 0.72;     // a cuánto baja al hacer clic
+  var PASO = 7;            // px de recorrido entre mota y mota
+  var TOPE_CUADRO = 14;    // motas como mucho por cuadro: un salto de pestaña no vacía la pila
+  var PILA = 420;          // motas vivas a la vez
+  var VIDA = 1.3;          // s que dura cada mota
+  var TAMANO = [1.1, 2.4]; // radio en px de pantalla, al azar entre estos
+  var SUBE = 34;           // px/s que sube el polvo
   var DPR_MAX = 1.5;       // más que esto no se nota y cuesta el doble
 
-  var VERT = [
+  /* ── 1. la hoja ── */
+  var VERT_HOJA = [
     "attribute vec2 position;",
     "void main(){ gl_Position = vec4(position, 0.0, 1.0); }"
   ].join("\n");
 
-  /* Campo de metaballs clásico: cada gota suma r²/d² y donde la suma
-     pasa el umbral hay tinta. El smoothstep es el borde suave.
-     El grano va en el mismo lienzo: como todo se mezcla por diferencia,
-     un poco de blanco al azar oscurece apenas la cal y aclara apenas la
-     tinta — el mismo grano sirve para los dos fondos y no hace falta
-     otra capa encima de la página. Cambia en cada cuadro, como el grano
-     de una película; quieto parecía una pantalla sucia. */
-  var FRAG = [
+  var FRAG_HOJA = [
     "precision highp float;",
-    "uniform vec2 uPos[16];",
-    "uniform float uRad[16];",
-    "uniform int uCount;",
-    "uniform float uGrano;",
-    "uniform float uCelda;",   // tamaño del grano en px del lienzo
-    "uniform float uSemilla;",
     "uniform vec2 uRes;",
     "uniform float uT;",       // segundos
     "uniform float uScroll;",  // scrollY en px del lienzo
+    "uniform float uGrano;",
+    "uniform float uCelda;",   // tamaño del grano en px del lienzo
+    "uniform float uSemilla;",
     "uniform float uLuz;",
     "uniform float uVineta;",
+    "float azar(vec2 p){",
+    "  p = fract(p * vec2(123.34, 456.21));",
+    "  p += dot(p, p + 45.32);",
+    "  return fract(p.x * p.y);",
+    "}",
     /* Una banda diagonal suave, de período `per`, corrida por `fase`.
        Dos de estas cruzadas, muy anchas y muy lentas, son la sombra que
        la estructura de arcos deja sobre la pared encalada cuando el sol
@@ -60,21 +62,8 @@
     "  float u = dot(p, vec2(cos(ang), sin(ang))) / per;",
     "  return 0.5 + 0.5 * sin(6.2831 * (u + fase));",
     "}",
-    "float azar(vec2 p){",
-    "  p = fract(p * vec2(123.34, 456.21));",
-    "  p += dot(p, p + 45.32);",
-    "  return fract(p.x * p.y);",
-    "}",
     "void main(){",
     "  vec2 p = gl_FragCoord.xy;",
-    "  float f = 0.0;",
-    "  for (int i = 0; i < 16; i++) {",
-    "    if (i >= uCount) break;",
-    "    vec2 d = p - uPos[i];",
-    "    float r = uRad[i];",
-    "    f += (r * r) / (dot(d, d) + 1.0);",
-    "  }",
-    "  float gota = smoothstep(0.82, 1.06, f);",
     "  float grano = azar(floor(p / uCelda) + uSemilla) * uGrano;",
     "  float d = uRes.y;",                                   // todo en proporción al alto
     "  vec2 q = vec2(p.x, p.y + uScroll * 0.35);",           // la pared pasa a un tercio del scroll
@@ -83,8 +72,47 @@
     "  luz = smoothstep(0.42, 1.0, luz) * uLuz;",
     "  vec2 c = p / uRes - 0.5;",
     "  float vineta = smoothstep(0.30, 1.05, length(c * vec2(uRes.x / uRes.y, 1.0)) * 1.25) * uVineta;",
-    "  float a = min(1.0, gota + grano + luz + vineta);",
+    "  float a = min(1.0, grano + luz + vineta);",
     "  gl_FragColor = vec4(a, a, a, a);", // premultiplicado: blanco con alfa
+    "}"
+  ].join("\n");
+
+  /* ── 2. el polvo ──
+     Cada mota es un punto con origen, velocidad, nacimiento y dos azares.
+     La edad se calcula acá, en la GPU: la CPU solo escribe las que nacen. */
+  var VERT_POLVO = [
+    "attribute vec2 aOrigen;",     // px del lienzo, y hacia arriba
+    "attribute vec2 aVel;",        // px/s
+    "attribute float aNace;",      // s
+    "attribute vec2 aAzar;",       // tamaño, fase
+    "uniform vec2 uRes;",
+    "uniform float uT;",
+    "uniform float uVida;",
+    "uniform float uSube;",
+    "uniform float uDpr;",
+    "varying float vAlfa;",
+    "void main(){",
+    "  float edad = uT - aNace;",
+    "  float u = edad / uVida;",
+    "  if (aNace < 0.0 || u < 0.0 || u > 1.0) {",   // muerta: afuera y sin tamaño
+    "    gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vAlfa = 0.0; return;",
+    "  }",
+    "  vec2 p = aOrigen + aVel * edad * (1.0 - 0.4 * u)",
+    "         + vec2(sin(aAzar.y * 6.283 + edad * 2.4) * 9.0 * u * uDpr, uSube * edad * uDpr);",
+    "  vec2 ndc = p / uRes * 2.0 - 1.0;",
+    "  gl_Position = vec4(ndc, 0.0, 1.0);",
+    "  gl_PointSize = aAzar.x * 2.0 * (1.0 - 0.35 * u) + 2.0;", // +2: borde suave
+    "  vAlfa = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.38, 1.0, u));",
+    "}"
+  ].join("\n");
+
+  var FRAG_POLVO = [
+    "precision mediump float;",
+    "varying float vAlfa;",
+    "void main(){",
+    "  float d = length(gl_PointCoord - 0.5) * 2.0;",
+    "  float a = (1.0 - smoothstep(0.55, 1.0, d)) * vAlfa * 0.75;",
+    "  gl_FragColor = vec4(a, a, a, a);",
     "}"
   ].join("\n");
 
@@ -92,52 +120,70 @@
     var s = gl.createShader(tipo);
     gl.shaderSource(s, fuente);
     gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      gl.deleteShader(s);
-      return null;
-    }
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; }
     return s;
+  }
+  function programa(gl, vert, frag) {
+    var vs = compilar(gl, gl.VERTEX_SHADER, vert);
+    var fs = compilar(gl, gl.FRAGMENT_SHADER, frag);
+    if (!vs || !fs) return null;
+    var prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+    return prog;
   }
 
   function init(lienzo) {
     var gl = lienzo.getContext("webgl", {
       alpha: true, antialias: false, depth: false, stencil: false,
-      powerPreference: "high-performance"
+      premultipliedAlpha: true, powerPreference: "high-performance"
     });
     if (!gl) return false;
 
-    var vs = compilar(gl, gl.VERTEX_SHADER, VERT);
-    var fs = compilar(gl, gl.FRAGMENT_SHADER, FRAG);
-    if (!vs || !fs) return false;
-    var prog = gl.createProgram();
-    gl.attachShader(prog, vs);
-    gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
-    gl.useProgram(prog);
+    var hoja = programa(gl, VERT_HOJA, FRAG_HOJA);
+    var polvo = programa(gl, VERT_POLVO, FRAG_POLVO);
+    if (!hoja || !polvo) return false;
 
-    var buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    /* la hoja: un cuadrado de dos triángulos */
+    var bufHoja = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufHoja);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
-    var aPos = gl.getAttribLocation(prog, "position");
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-    gl.clearColor(0, 0, 0, 0);
+    var aPos = gl.getAttribLocation(hoja, "position");
+    var uH = {};
+    ["uRes", "uT", "uScroll", "uGrano", "uCelda", "uSemilla", "uLuz", "uVineta"].forEach(function (n) {
+      uH[n] = gl.getUniformLocation(hoja, n);
+    });
+    gl.useProgram(hoja);
+    gl.uniform1f(uH.uGrano, GRANO);
+    gl.uniform1f(uH.uLuz, LUZ);
+    gl.uniform1f(uH.uVineta, VINETA);
 
-    var uPos = gl.getUniformLocation(prog, "uPos");
-    var uRad = gl.getUniformLocation(prog, "uRad");
-    var uCount = gl.getUniformLocation(prog, "uCount");
-    var uGrano = gl.getUniformLocation(prog, "uGrano");
-    var uCelda = gl.getUniformLocation(prog, "uCelda");
-    var uSemilla = gl.getUniformLocation(prog, "uSemilla");
-    var uRes = gl.getUniformLocation(prog, "uRes");
-    var uT = gl.getUniformLocation(prog, "uT");
-    var uScroll = gl.getUniformLocation(prog, "uScroll");
-    var uLuz = gl.getUniformLocation(prog, "uLuz");
-    var uVineta = gl.getUniformLocation(prog, "uVineta");
-    gl.uniform1f(uGrano, GRANO);
-    gl.uniform1f(uLuz, LUZ);
-    gl.uniform1f(uVineta, VINETA);
+    /* el polvo: una pila fija; se sube entera solo cuando nació alguna */
+    var origen = new Float32Array(PILA * 2);
+    var vel = new Float32Array(PILA * 2);
+    var nace = new Float32Array(PILA);
+    var azar = new Float32Array(PILA * 2);
+    for (var z = 0; z < PILA; z++) nace[z] = -1;
+    var cabeza = 0, sucio = true, vivas = 0;
+    function atributo(nombre, datos, n) {
+      var b = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, datos, gl.DYNAMIC_DRAW);
+      return { buf: b, loc: gl.getAttribLocation(polvo, nombre), n: n, datos: datos };
+    }
+    var atribs = [
+      atributo("aOrigen", origen, 2), atributo("aVel", vel, 2),
+      atributo("aNace", nace, 1), atributo("aAzar", azar, 2)
+    ];
+    var uP = {};
+    ["uRes", "uT", "uVida", "uSube", "uDpr"].forEach(function (n) { uP[n] = gl.getUniformLocation(polvo, n); });
+    gl.useProgram(polvo);
+    gl.uniform1f(uP.uVida, VIDA);
+    gl.uniform1f(uP.uSube, SUBE);
+
+    gl.clearColor(0, 0, 0, 0);
 
     var dpr = 1, anchoCss = 0, altoCss = 0;
     function medir() {
@@ -146,116 +192,95 @@
       altoCss = lienzo.clientHeight;
       var w = Math.max(1, Math.round(anchoCss * dpr));
       var h = Math.max(1, Math.round(altoCss * dpr));
-      if (lienzo.width !== w || lienzo.height !== h) {
-        lienzo.width = w; lienzo.height = h;
-      }
+      if (lienzo.width !== w || lienzo.height !== h) { lienzo.width = w; lienzo.height = h; }
       gl.viewport(0, 0, w, h);
-      gl.uniform1f(uCelda, Math.max(1, dpr)); // un grano ≈ un px de pantalla
-      gl.uniform2f(uRes, w, h);
     }
 
-    /* estado: a dónde apunta la mano y dónde están las tres gotas */
-    var lejos = -400;
-    var est = {
-      tx: lejos, ty: lejos,
-      cabeza: { x: lejos, y: lejos }, medio: { x: lejos, y: lejos }, cola: { x: lejos, y: lejos },
-      previa: { x: lejos, y: lejos },
-      ultimoMov: 0, adentro: false, gotas: [], t: 0,
-      escala: 1, escalaMeta: 1,
-      sobre: 0, sobreMeta: 0,        // 1 = encima de algo que se puede tocar
-      apretada: 1, apretadaMeta: 1   // < 1 mientras el botón está abajo
-    };
-    var pos = new Float32Array(32);
-    var rad = new Float32Array(16);
-
+    /* la mano: de dónde viene y hasta dónde llegó desde el último cuadro */
+    var mano = { x: -1, y: -1, previaX: -1, previaY: -1, hay: false };
     window.addEventListener("pointermove", function (e) {
-      est.tx = e.clientX; est.ty = e.clientY;
-      est.adentro = true;
-      est.ultimoMov = performance.now();
+      mano.x = e.clientX; mano.y = e.clientY;
+      if (!mano.hay) { mano.previaX = mano.x; mano.previaY = mano.y; mano.hay = true; }
     }, { passive: true });
-    // cuando la mano sale de la ventana la gota se va por abajo, no se corta
-    document.documentElement.addEventListener("pointerleave", function () {
-      est.adentro = false;
-      est.ty = window.innerHeight + 260;
-    });
+    // al salir de la ventana se olvida el último punto: si no, al volver a
+    // entrar se dibuja un puente diagonal desde donde salió
+    document.documentElement.addEventListener("pointerleave", function () { mano.hay = false; });
     window.addEventListener("resize", medir);
+
+    var t = 0;
+    function nacer(x, y) {
+      var i = cabeza;
+      cabeza = (cabeza + 1) % PILA;
+      origen[2 * i] = x * dpr;
+      origen[2 * i + 1] = (altoCss - y) * dpr;
+      var ang = Math.random() * 6.283, rap = (6 + Math.random() * 16) * dpr;
+      vel[2 * i] = Math.cos(ang) * rap;
+      vel[2 * i + 1] = Math.sin(ang) * rap * 0.6;
+      nace[i] = t;
+      azar[2 * i] = (TAMANO[0] + Math.random() * (TAMANO[1] - TAMANO[0])) * dpr;
+      azar[2 * i + 1] = Math.random();
+      sucio = true;
+      vivas = Math.min(PILA, vivas + 1);
+    }
 
     var pedido = 0, antes = performance.now();
     function cuadro(ahora) {
       pedido = requestAnimationFrame(cuadro);
-      var dt = Math.min(0.05, (ahora - antes) / 1000);
+      var dt = Math.min(1 / 30, (ahora - antes) / 1000);
       antes = ahora;
-      // p = "cuántos cuadros de 60 fps pasaron": los factores de seguimiento
-      // están pensados a 60 y así se sienten igual a 120 o con un tirón
-      var p = Math.max(0.05, Math.min(1, 60 * dt));
-      est.t += dt;
-
+      t += dt;
       medir();
-      var c = est.cabeza, m = est.medio, k = est.cola;
-      c.x += (est.tx - c.x) * SIGUE_CABEZA * p;
-      c.y += (est.ty - c.y) * SIGUE_CABEZA * p;
-      var pega = 1 + 1.6 * est.sobre; // sobre un enlace, la cola alcanza a la cabeza
-      m.x += (c.x - m.x) * Math.min(1, SIGUE_MEDIO * pega) * p;
-      m.y += (c.y - m.y) * Math.min(1, SIGUE_MEDIO * pega) * p;
-      k.x += (m.x - k.x) * Math.min(1, SIGUE_COLA * pega) * p;
-      k.y += (m.y - k.y) * Math.min(1, SIGUE_COLA * pega) * p;
 
-      var vel = Math.hypot(c.x - est.previa.x, c.y - est.previa.y) / p;
-      est.previa.x = c.x; est.previa.y = c.y;
-
-      est.escala += (est.escalaMeta - est.escala) * 0.08 * p;
-      est.sobre += (est.sobreMeta - est.sobre) * 0.16 * p;
-      est.apretada += (est.apretadaMeta - est.apretada) * 0.3 * p;
-      var esc = est.escala * est.apretada;
-      var quieta = ahora - est.ultimoMov > 1200 ? 3 * Math.sin(2.2 * est.t) : 0; // respira si la mano se queda
-      /* sobre un enlace la tinta se junta: la cabeza crece y la cola se
-         mete adentro (en vez de arrastrarse) — una gota lista para caer */
-      var rc = (CABEZA + Math.min(VEL_CABEZA, 0.35 * vel) + quieta) * esc * (1 + SOBRE * est.sobre);
-      var rm = (MEDIO + Math.min(VEL_MEDIO, 0.25 * vel)) * esc;
-      var rk = (COLA + Math.min(VEL_COLA, 0.2 * vel)) * esc * (1 - 0.5 * est.sobre);
-
-      // gotitas: solo cuando va rápido, a veces, y ni encogida ni sobre algo
-      if (est.adentro && esc > 0.6 && est.sobre < 0.3 && vel > 18 && Math.random() < 0.28 && est.gotas.length < MAX_GOTAS) {
-        var dx = k.x - c.x, dy = k.y - c.y, len = Math.hypot(dx, dy) || 1;
-        est.gotas.push({
-          x: k.x + dx / len * 6, y: k.y + dy / len * 6,
-          vx: dx / len * 2.2 + (Math.random() - 0.5) * 1.5,
-          vy: dy / len * 2.2 - 1.5,
-          r: 5 + 7 * Math.random(), vida: 1
-        });
-      }
-      for (var i = 0; i < est.gotas.length; i++) {
-        var g = est.gotas[i];
-        g.vy += 0.42 * p;           // caen
-        g.vx *= 0.985;
-        g.x += g.vx * p; g.y += g.vy * p;
-        g.r *= 1 - 0.012 * p;       // se achican
-        g.vida -= dt / 1.3;         // y se apagan
-      }
-      est.gotas = est.gotas.filter(function (g) { return g.vida > 0 && g.r > 1.2 && g.y < altoCss + 60; });
-
-      function poner(i, x, y, r) {
-        pos[2 * i] = x * dpr;
-        pos[2 * i + 1] = (altoCss - y) * dpr; // WebGL cuenta desde abajo
-        rad[i] = r * dpr;
-      }
-      poner(0, c.x, c.y, rc);
-      poner(1, m.x, m.y, rm);
-      poner(2, k.x, k.y, rk);
-      var n = 3;
-      for (var j = 0; j < est.gotas.length && n < 16; j++) {
-        var q = est.gotas[j];
-        poner(n++, q.x, q.y, q.r * (0.4 + 0.6 * q.vida) * esc);
+      /* emitir por distancia: las motas se reparten a lo largo del tramo
+         recorrido desde el cuadro anterior, cada PASO px. En la portada no:
+         ahí el polvo ya lo levanta el haz de luz del 3D (redondel.js) y
+         dos polvos a la vez eran una nube. */
+      var enPortada = (window.scrollY || 0) < altoCss * 0.9;
+      if (mano.hay && enPortada) { mano.previaX = mano.x; mano.previaY = mano.y; }
+      if (mano.hay && !enPortada) {
+        var dx = mano.x - mano.previaX, dy = mano.y - mano.previaY;
+        var dist = Math.hypot(dx, dy);
+        var n = Math.min(TOPE_CUADRO, Math.floor(dist / PASO));
+        for (var k = 1; k <= n; k++) nacer(mano.previaX + dx * k / n, mano.previaY + dy * k / n);
+        if (n) { mano.previaX = mano.x; mano.previaY = mano.y; }
       }
 
-      gl.uniform2fv(uPos, pos);
-      gl.uniform1fv(uRad, rad);
-      gl.uniform1i(uCount, n);
-      gl.uniform1f(uSemilla, (ahora % 1000) / 1000 * 97.0);
-      gl.uniform1f(uT, est.t);
-      gl.uniform1f(uScroll, (window.scrollY || 0) * dpr);
       gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // 1. la hoja, sin mezclar: pisa todo el lienzo
+      gl.disable(gl.BLEND);
+      gl.useProgram(hoja);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bufHoja);
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform2f(uH.uRes, lienzo.width, lienzo.height);
+      gl.uniform1f(uH.uT, t);
+      gl.uniform1f(uH.uScroll, (window.scrollY || 0) * dpr);
+      gl.uniform1f(uH.uCelda, Math.max(1, dpr));
+      gl.uniform1f(uH.uSemilla, (ahora % 1000) / 1000 * 97.0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      // 2. el polvo, encima, mezclado (premultiplicado)
+      if (vivas) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(polvo);
+        for (var a = 0; a < atribs.length; a++) {
+          var at = atribs[a];
+          gl.bindBuffer(gl.ARRAY_BUFFER, at.buf);
+          if (sucio) gl.bufferSubData(gl.ARRAY_BUFFER, 0, at.datos);
+          gl.enableVertexAttribArray(at.loc);
+          gl.vertexAttribPointer(at.loc, at.n, gl.FLOAT, false, 0, 0);
+        }
+        sucio = false;
+        gl.uniform2f(uP.uRes, lienzo.width, lienzo.height);
+        gl.uniform1f(uP.uT, t);
+        gl.uniform1f(uP.uDpr, dpr);
+        gl.drawArrays(gl.POINTS, 0, PILA);
+        // cuando la última que nació ya murió, no hace falta dibujar la pila
+        var ultima = nace[(cabeza + PILA - 1) % PILA];
+        if (t - ultima > VIDA) vivas = 0;
+      }
     }
 
     function arrancar() {
@@ -280,11 +305,8 @@
     medir();
     arrancar();
     lienzo.classList.add("lista");
-    window.Tinta.encoger = function (si) { est.escalaMeta = si ? ENCOGIDA : 1; };
-    window.Tinta.sobre = function (si) { est.sobreMeta = si ? 1 : 0; };
-    window.Tinta.apretar = function (si) { est.apretadaMeta = si ? APRETADA : 1; };
     return true;
   }
 
-  window.Tinta = { init: init, encoger: function () {}, sobre: function () {}, apretar: function () {} };
+  window.Tinta = { init: init };
 })();

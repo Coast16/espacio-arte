@@ -392,11 +392,17 @@
     if (!palabras.length) return;
     if (menosMovimiento) { gsap.set(palabras, { opacity: 1 }); return; }
 
-    gsap.to(palabras, {
-      opacity: 1, ease: "none", duration: 0.35,
-      stagger: { amount: reparto },
-      scrollTrigger: { trigger: disparo || el, start: desde, end: hasta, scrub: 0.6 }
-    });
+    /* En escritorio cada palabra además sube un tercio de su alto al
+       encenderse: el párrafo se asienta sobre la línea a medida que lo
+       leés. En celular solo la opacidad, que es lo que ya andaba bien. */
+    var sube = !mmChico.matches;
+    gsap.fromTo(palabras,
+      { opacity: sube ? 0.2 : undefined, y: sube ? "0.34em" : 0 },
+      {
+        opacity: 1, y: 0, ease: "none", duration: 0.35,
+        stagger: { amount: reparto },
+        scrollTrigger: { trigger: disparo || el, start: desde, end: hasta, scrub: 0.6 }
+      });
   }
 
   function encenderTextos() {
@@ -580,7 +586,7 @@
     window.Recorrido.alClic = function (d, ruta) {
       abrirVisor(ruta + d.f, d.m, d.t);
     };
-    window.Recorrido.alSobre = function (si) { if (hayTinta) window.Tinta.sobre(si); };
+    window.Recorrido.alSobre = function (si) { mira.poner(si, "Ver"); };
   }
 
   function armarVisor() {
@@ -664,45 +670,30 @@
      pasillo, así todas las fotos del sitio se agrandan igual) y adentro del
      marco se corre un poco con el puntero. Ese desfasaje entre la foto y su
      ventana es de dónde sale la sensación de capas. */
-  function mirarLaSala() {
-    var boton = document.querySelector(".lugar-foto-abrir");
-    if (!boton) return;
-    var img = boton.querySelector("img");
-    var marco = boton.querySelector(".lugar-foto-marco");
-    var pie = document.querySelector(".lugar-foto figcaption");
-
-    boton.addEventListener("click", function () {
-      if (!abrirVisor) return;
-      abrirVisor(img.currentSrc || img.src, "La sala",
-        pie ? pie.textContent.trim() : "", img.alt);
+  /* ── ciento once años, contados con el scroll ──
+     La foto de la sala se fue de esta sección y el silencio quedó a cargo
+     del texto: entre las dos declaraciones, un año enorme corre de 1912
+     (la última corrida) a 2021 (la reapertura) a medida que bajás, y una
+     línea se dibuja debajo. Son los dos números que ya dice el texto,
+     puestos a pasar: el siglo cerrado se ve pasar bajo la mano. */
+  function contarAnios() {
+    var caja = document.querySelector(".lugar-anios");
+    var num = document.getElementById("lugarAnios");
+    if (!caja || !num) return;
+    var desde = parseInt(num.dataset.desde, 10), hasta = parseInt(num.dataset.hasta, 10);
+    if (menosMovimiento || !isFinite(desde) || !isFinite(hasta)) { num.textContent = String(hasta); return; }
+    var linea = caja.querySelector(".lugar-anios-linea");
+    var est = { v: desde };
+    var tl = gsap.timeline({
+      scrollTrigger: { trigger: caja, start: "top 88%", end: "bottom 42%", scrub: 0.6 }
     });
-
-    if (!menosMovimiento && !mmChico.matches) {
-      /* Se destapa de arriba hacia abajo mientras entra, y después sigue
-         subiendo un poco más lento que la página: la foto tiene otra
-         profundidad que el texto que la rodea. */
-      gsap.fromTo(marco,
-        { clipPath: "inset(22% 0 0 0)" },
-        { clipPath: "inset(0% 0 0 0)", ease: "none",
-          scrollTrigger: { trigger: marco, start: "top 96%", end: "top 48%", scrub: 0.5 } });
-      gsap.fromTo(boton.parentNode,
-        { y: 36 },
-        { y: -36, ease: "none",
-          scrollTrigger: { trigger: boton.parentNode, start: "top bottom", end: "bottom top", scrub: true } });
-    }
-
-    if (menosMovimiento || !punteroFino) return;
-    marco.addEventListener("pointermove", function (e) {
-      var r = marco.getBoundingClientRect();
-      // 2,4 % de recorrido: la foto entra con scale(1.06), así que nunca
-      // se despega del borde por más que la lleves a la esquina
-      img.style.setProperty("--dx", (((e.clientX - r.left) / r.width - 0.5) * -2.4).toFixed(2) + "%");
-      img.style.setProperty("--dy", (((e.clientY - r.top) / r.height - 0.5) * -2.4).toFixed(2) + "%");
-    }, { passive: true });
-    marco.addEventListener("pointerleave", function () {
-      img.style.setProperty("--dx", "0%");
-      img.style.setProperty("--dy", "0%");
-    }, { passive: true });
+    tl.to(est, {
+      v: hasta, ease: "none", duration: 1,
+      onUpdate: function () { num.textContent = String(Math.round(est.v)); }
+    }, 0);
+    if (linea) tl.fromTo(linea, { scaleX: 0 }, { scaleX: 1, ease: "none", duration: 1 }, 0);
+    // el número entra desde abajo y se asienta: empieza tenue, termina en tinta
+    tl.fromTo(num, { yPercent: 18, opacity: 0.25 }, { yPercent: 0, opacity: 1, ease: "none", duration: 1 }, 0);
   }
 
   /* ── la guía del recorrido se retira sola ── */
@@ -722,10 +713,7 @@
     if (!luz || !sec || !haySala) return;
     ScrollTrigger.create({
       trigger: sec, start: "top 65%", end: "bottom 35%",
-      onToggle: function (self) {
-        luz.classList.toggle("apagada", self.isActive);
-        if (hayTinta) window.Tinta.encoger(self.isActive);
-      }
+      onToggle: function (self) { luz.classList.toggle("apagada", self.isActive); }
     });
   }
 
@@ -1106,22 +1094,60 @@
       });
   }
 
-  /* ── la gota acusa recibo ──
-     Sobre cualquier cosa que se pueda tocar, la tinta se junta; al apretar
-     se achica. Se escucha en el documento entero, no enlace por enlace. */
-  function enlazarCursor() {
-    if (!hayTinta) return;
+  /* ── la mira: el cursor ──
+     Un anillo fino y un punto, en blanco por diferencia (tinta sobre cal,
+     cal sobre tinta). El punto va pegado a la mano; el anillo llega un
+     poco después. Sobre algo que se puede tocar, el anillo se abre y, si
+     el elemento trae data-mira, dice qué pasa al tocar ("Ver"). Al
+     apretar se cierra un poco. Cuando arranca, esconde la flecha del
+     sistema (html.con-mira): dos cursores eran uno de más.
+     Es DOM y no canvas porque el rótulo es texto de verdad. */
+  var mira = { poner: function () {}, apretar: function () {} };
+  function armarMira() {
+    var caja = document.getElementById("mira");
+    if (!caja || menosMovimiento || !punteroFino) return;
+    var anillo = caja.querySelector(".mira-anillo");
+    var punto = caja.querySelector(".mira-punto");
+    var rotulo = caja.querySelector(".mira-rotulo");
+    var moverAnillo = { x: gsap.quickTo(anillo, "x", { duration: 0.3, ease: "power3.out" }),
+                        y: gsap.quickTo(anillo, "y", { duration: 0.3, ease: "power3.out" }) };
+    var moverPunto = { x: gsap.quickTo(punto, "x", { duration: 0.1, ease: "power2.out" }),
+                       y: gsap.quickTo(punto, "y", { duration: 0.1, ease: "power2.out" }) };
+    var moverRotulo = { x: gsap.quickTo(rotulo, "x", { duration: 0.3, ease: "power3.out" }),
+                        y: gsap.quickTo(rotulo, "y", { duration: 0.3, ease: "power3.out" }) };
+    var viva = false;
+    window.addEventListener("pointermove", function (e) {
+      if (!viva) {
+        viva = true;
+        gsap.set([anillo, punto, rotulo], { x: e.clientX, y: e.clientY });
+        document.documentElement.classList.add("con-mira");
+      }
+      moverAnillo.x(e.clientX); moverAnillo.y(e.clientY);
+      moverPunto.x(e.clientX); moverPunto.y(e.clientY);
+      moverRotulo.x(e.clientX); moverRotulo.y(e.clientY);
+      caja.classList.add("viva");
+    }, { passive: true });
+    document.documentElement.addEventListener("pointerleave", function () { caja.classList.remove("viva"); });
+
+    var textoRotulo = rotulo.querySelector("i") || rotulo;
+    mira.poner = function (activo, texto) {
+      caja.classList.toggle("sobre", !!activo);
+      if (activo && texto) textoRotulo.textContent = texto; // al soltar, el texto queda hasta que se apaga
+      caja.classList.toggle("con-rotulo", !!(activo && texto));
+    };
+    mira.apretar = function (si) { caja.classList.toggle("apretada", !!si); };
+
     var TOCABLE = "a, button, [role=button], summary";
     var sobre = null;
     document.addEventListener("pointerover", function (e) {
       var t = e.target.closest ? e.target.closest(TOCABLE) : null;
       if (t === sobre) return;
       sobre = t;
-      window.Tinta.sobre(!!t);
+      mira.poner(!!t, t ? t.getAttribute("data-mira") : "");
     }, { passive: true });
-    document.addEventListener("pointerdown", function () { window.Tinta.apretar(true); }, { passive: true });
-    window.addEventListener("pointerup", function () { window.Tinta.apretar(false); }, { passive: true });
-    window.addEventListener("pointercancel", function () { window.Tinta.apretar(false); }, { passive: true });
+    document.addEventListener("pointerdown", function () { mira.apretar(true); }, { passive: true });
+    window.addEventListener("pointerup", function () { mira.apretar(false); }, { passive: true });
+    window.addEventListener("pointercancel", function () { mira.apretar(false); }, { passive: true });
   }
 
   /* ── enlaces imantados ──
@@ -1175,7 +1201,7 @@
      recorrido se sostienen con position:sticky del CSS, así que estos
      triggers miden sobre una página que no se va a estirar debajo. */
   armarVisor();
-  mirarLaSala();
+  contarAnios();
   revelarTitulos();
   revelarBloques();
   contarCifras();
@@ -1191,8 +1217,8 @@
   // la marca grande del pie sube desde el borde
   firmarPie();
 
-  // el cursor acusa recibo de lo que se puede tocar, y los enlaces lo imantan
-  enlazarCursor();
+  // la mira acusa recibo de lo que se puede tocar, y los enlaces la imantan
+  armarMira();
   imantar();
   profundidadPortada();
 

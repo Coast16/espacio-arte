@@ -441,64 +441,57 @@ El scrub va contra un objeto intermedio (`paso`), no contra un ScrollTrigger
 pelado: un trigger sin animación **no interpola su propio `progress`**, así que
 la cámara saltaría.
 
-### La capa de escritorio: la gota de tinta, la luz y el grano
+### La capa de escritorio: la hoja, el polvo, la mira y la luz
 
-Tres cosas que existen solo con puntero fino y sin "reducir movimiento", y
-que en el celular ni se crean (`.luz,.tinta{display:none}` en el bloque de
-celular; `encenderTinta()` mira `punteroFino`). La referencia fue el cursor y
-el fondo de chelabs.dev, pasados a cal y tinta.
+Cuatro cosas que existen solo con puntero fino y sin "reducir movimiento",
+y que en el celular ni se crean (`.luz,.tinta,.mira{display:none}` en el
+bloque de celular; `encenderTinta()` y `armarMira()` miran `punteroFino`).
 
-- **La gota de tinta (`js/tinta.js`, `#tinta`).** Un lienzo WebGL fijo a
-  pantalla completa, `pointer-events:none`, z-index 95 (debajo de la barra en
-  100 y del visor en 250: la gota no se mete en la obra que estás mirando en
-  grande). Tres círculos que se funden —metaballs: cada uno suma `r²/d²` y
-  donde la suma pasa 0,82–1,06 hay tinta— siguen al puntero con factores
-  0,32 / 0,17 / 0,11 por cuadro a 60 fps, así la cola se estira cuando la mano
-  corre. Crecen con la velocidad, respiran si la mano se queda quieta más de
-  1,2 s, y arriba de 18 px/cuadro la cola suelta gotitas con gravedad que se
-  achican y mueren en 1,3 s (máximo 10 vivas, 16 formas en el shader). Los
-  números que mandan están arriba del archivo con nombre.
-- **Se pinta siempre en blanco y la hoja la mezcla por `difference`.** Sobre
-  cal (#F4F2ED) queda tinta casi negra, sobre tinta (#0A0B0D) queda cal, y
-  sobre una foto la da vuelta como un negativo. Un solo color para los dos
-  fondos, sin preguntarle al DOM qué hay debajo. Chelabs hace lo mismo con su
-  naranja: naranja sobre naranja da negro.
-- **El grano va en el mismo lienzo.** Un `hash` por px del lienzo, amplitud
-  `GRANO` = 0,045, semilla nueva en cada cuadro. Como todo se mezcla por
-  diferencia, un poco de blanco al azar oscurece apenas la cal y aclara apenas
-  la tinta: el mismo grano se ve en los dos fondos y no hace falta otra capa
-  con `mix-blend-mode` encima de la página (cada capa así es un pase de mezcla
-  a pantalla completa por cuadro). Quieto parecía una pantalla sucia porque la
-  página scrollea debajo; en movimiento es grano de película.
-- **La luz (`.luz`) pasó de `multiply` a `difference` en blanco.** Con
-  multiply, en los bloques oscuros no se veía nada. En blanco por diferencia
-  es una sombra tenue sobre cal y un halo claro sobre tinta, con el mismo
-  degradado (960 px, 9 % en el centro).
-- **La sombra de los arcos y la viñeta viven también en el shader.** Mathias
-  sentía la cal "muy apagada". Dos bandas diagonales muy anchas (`haz()`,
-  períodos 1,15 y 1,9 veces el alto), muy lentas (ciclos de minutos) y que
-  además se corren a un tercio del scroll, oscurecen la cal hasta un 5 %:
-  la sombra que la estructura de arcos deja en la pared cuando el sol se
-  mueve. Sobre tinta, por diferencia, son haces claros. Más una viñeta de
-  4,5 % en los bordes. Con eso el fondo deja de ser un color plano y pasa a
-  ser una pared con luz, sin agregar ningún color. `LUZ` y `VINETA` arriba
-  del archivo; en 0 se apagan.
-- **La gota acusa recibo.** `Tinta.sobre(true)` sobre cualquier `a`,
-  `button`, `[role=button]` (se escucha `pointerover` en el documento, no
-  enlace por enlace) y sobre una obra del pasillo 3D (`Recorrido.alSobre`):
-  la cabeza crece 50 %, la cola alcanza a la cabeza (la tinta se junta) y no
-  suelta gotitas. `Tinta.apretar(true)` con el botón abajo: baja a 0,72. La
-  gota va por ENCIMA de la barra (z 110): sobre un enlace lo da vuelta y el
-  texto se lee claro adentro de la tinta.
-- **Rendimiento medido**: con el puntero en movimiento sintético continuo y la
-  portada 3D corriendo, mediana 16,7 ms por cuadro y p95 17,6 ms a 1180×814.
-  El lienzo va a `min(1.5, devicePixelRatio)`; el cursor del sistema queda (no
-  se pone `cursor:none`): la gota lo acompaña, no lo reemplaza.
+- **La hoja (`js/tinta.js`, `#tinta`).** Un lienzo WebGL fijo a pantalla
+  completa, `pointer-events:none`, z-index 110, que la página mezcla con
+  `mix-blend-mode:difference` y que se pinta SIEMPRE en blanco: sobre cal
+  (#F4F2ED) oscurece, sobre tinta (#0A0B0D) aclara, sobre una foto da
+  vuelta. Un solo color para los dos fondos, sin preguntarle al DOM qué hay
+  debajo. Dibuja el **grano** (un hash por px, `GRANO` 0,045, semilla nueva
+  por cuadro: quieto parecía una pantalla sucia), la **sombra de los arcos**
+  (dos bandas diagonales muy anchas, `haz()`, períodos 1,15 y 1,9 veces el
+  alto, ciclos de minutos, que se corren a un tercio del scroll; Mathias
+  sentía la cal "muy apagada" y esto la vuelve una pared con luz sin agregar
+  color) y la **viñeta** (4,5 % en los bordes). Todo en un cuadrado de
+  pantalla completa: cada capa con `mix-blend-mode` es un pase de mezcla
+  por cuadro, así que conviene una sola.
+- **El polvo.** En el mismo lienzo, un segundo programa de `gl.POINTS`:
+  motas que la mano levanta al pasar. Se emiten **por distancia** (cada 7
+  px de recorrido, tope 14 por cuadro), no por tiempo: un barrido rápido no
+  deja huecos y una mano quieta no amontona. Pila fija de 420 en la GPU, la
+  edad se calcula en el vertex shader, los buffers se suben solo cuando
+  nació alguna. Viven 1,3 s, suben 34 px/s y se apagan. Es la receta del
+  skill `build-interactive-particle-trail` de la carpeta de Mathias, pasada
+  a cal y tinta. En la portada no emite: ahí el polvo ya lo levanta el haz
+  de luz del 3D (`redondel.js`) y dos polvos eran una nube.
+- **La mira (`#mira`, `armarMira()` en main.js).** El cursor. Un anillo de
+  28 px con borde de 1 px y un punto de 4 px, blancos por diferencia. El
+  punto va pegado a la mano (`quickTo` 0,1 s) y el anillo llega después
+  (0,3 s). Sobre cualquier `a`, `button`, `[role=button]` (se escucha
+  `pointerover` en el documento, no enlace por enlace) el anillo se abre
+  ×1,9 y el punto se apaga; sobre una obra del pasillo 3D
+  (`Recorrido.alSobre`) además dice **"Ver"** en mono (`.mira-rotulo`). Al
+  apretar se cierra a 0,8. Cuando arranca esconde la flecha del sistema
+  (`html.con-mira{cursor:none}`): dos cursores eran uno de más. Es DOM y no
+  canvas porque el rótulo es texto de verdad.
+  **Trampa:** GSAP mueve el `span` de afuera (x/y) y el CSS escala la `<i>`
+  de adentro. Al escribir un `transform`, GSAP pone `scale:none` en línea y
+  pisaría cualquier `scale` propio del mismo elemento.
+- **Antes había una gota de goma (metaballs) copiada de chelabs.dev.**
+  Mathias la sacó por parecida a la referencia; está en el historial
+  (`9f79b4d`… `cf7f652`) si hiciera falta volver.
+- **La luz (`.luz`) va en blanco por `difference`.** Con multiply, en los
+  bloques oscuros no se veía nada. Sombra tenue sobre cal, halo claro sobre
+  tinta, con el mismo degradado (960 px, 9 % en el centro).
 - **Trampa que costó una vuelta**: `var hayTinta = false` estaba declarado
   DESPUÉS de la llamada a `encenderTinta()`. La declaración se iza, la
-  asignación no: la función ponía `true` y al pasar por la línea volvía a
-  `false`, así que la gota nunca se encogía en la sala. Las banderas se declaran
-  antes de la primera llamada que las toca.
+  asignación no. Las banderas se declaran antes de la primera llamada que
+  las toca.
 
 ### Atado al scroll: la tercera pasada de movimiento
 
@@ -522,9 +515,8 @@ prendido: mediana 16,7 ms por cuadro, p95 18,6, ningún cuadro arriba de 20.
   suman, volvés y descuentan.
 - **El rótulo se escribe detrás de su regla**: `clip-path: inset(0 100% 0 0)
   → inset(0 0% 0 0)` con el mismo trigger que la regla.
-- **La foto de la sala se destapa** (`clip-path` de arriba hacia abajo) y
-  flota 36 px más lento que la página (`y: 36 → -36` sobre `.lugar-foto`,
-  no sobre el marco, que ya tiene su `:active`).
+- **Las declaraciones suben palabra a palabra** además de encenderse
+  (`encender()`, `y: .34em → 0` con el mismo scrub) en escritorio.
 - **La cinta acusa recibo del scroll**: a la velocidad base se le suman 24
   px/s por cada px/cuadro de scroll, suavizado, y se inclina hasta 6°
   (`skewX`). La velocidad se lee con `getVelocity()` de un ScrollTrigger
@@ -801,10 +793,10 @@ la del sistema y no hay nada que pueda ir a destiempo.
   centro: la obra que estás mirando queda pegada al margen izquierdo, siempre
   en el mismo lugar, y la siguiente asoma. Centrado, la primera y la última
   nunca llegan a su punto y la cuenta miente.
-- `armarPasillo()` le agrega la cuenta (`01 / 51`), la barra de avance y la
+- `armarPasillo()` le agrega la cuenta (`01 / 50`), la barra de avance y la
   profundidad: cada tarjeta se achica y se apaga según lo lejos que esté del
   ancla. Es un `transform` y una `opacity`, nada que obligue a recalcular.
-- **Las fotos se piden de a cuatro, adelantadas.** Las 51 en lazy son 5 MB,
+- **Las fotos se piden de a cuatro, adelantadas.** Las 50 en lazy son 5 MB,
   pero el lazy solo llega tarde en un riel: la foto empieza a pedirse recién
   cuando ya la estás mirando y se camina contra tarjetas en blanco.
   `adelantar()` le saca el `loading="lazy"` a las cuatro que vienen. Y no
@@ -854,14 +846,23 @@ poder leerse sin una sola animación.
 
 - **Texto institucional.** El de `.manifiesto` lo redacté a partir de datos
   verificados del predio. Falta el de Laura para reemplazarlo.
-- **Foto del salón.** `.lugar-bajo` usa `bianki-sala.jpg`, que es la sala real
-  de la Plaza. Si Laura o Mathias mandan una mejor, se cambia el `src` y el
-  `srcset` y listo.
+- **La foto de la sala en *El lugar* se sacó** a pedido de Mathias (era
+  `bianki-sala.jpg`; también salió del `og:image`, que ahora es
+  `carnaval-02.jpg`, la galería de arcos al atardecer). En su lugar, entre
+  las dos declaraciones, **el año que corre**: `.lugar-anios` cuenta de 1912
+  a 2021 con el scroll (`contarAnios()`), con una línea que se dibuja
+  debajo. Son los dos números que ya dice el texto; no hay dato nuevo.
 - **Fotos.** Hay registro de *Espacio Bianki*, *Sinergia*, *Relatos Dibujados*,
   *El Secreto de Magín*, *Sinfonía de Colores*, *Carnaval Uruguayo*, *Gol en
   3 colores*, *Gente en Obra*, *Interfaz* y del *lanzamiento interactivo*:
-  **51 obras en el recorrido**. Sigue sin foto *The garden of the early
+  **50 obras en el recorrido**. Sigue sin foto *The garden of the early
   delights* («Solo ficha»). No hay que ilustrar una muestra con fotos de otra.
+- **El orden del pasillo** es: las muestras sin fecha primero (Sinergia,
+  Relatos, Magín, Sinfonía, Bianki, el lanzamiento interactivo), después
+  las fechadas de la más vieja a la más nueva (Carnaval 2025, Gol, Gente en
+  Obra e Interfaz, 2026). Termina en Interfaz, la muestra que está EN la
+  sala, con `interfaz-02` (la maraña de cordones) de remate. La foto de la
+  bailarina (`lanzamiento-04`) se sacó: Mathias la encontró de mala calidad.
 - **Las 22 fotos de la tercera tanda** salen de las 222 que mandó Laura
   (`~/Downloads/Espacio Arte extras/`, carpetas 07, 09 y 10 de su archivo).
   Se eligieron con hojas de contacto y nitidez medida (varianza del

@@ -55,6 +55,10 @@ window.Recorrido = (function () {
     { f: "../bianki-torre.jpg",   w: 1066, h: 1600, m: "Espacio Bianki",       t: "Torre de paños pintados colgando del techo" },
     { f: "../obra-figuras.jpg",   w: 1600, h: 1066, m: "Espacio Bianki",       t: "Detalle de una pieza textil" },
 
+    { f: "lanzamiento-01.jpg", w: 1280, h: 853,  m: "Lanzamiento interactivo", t: "Proyección de color sobre las columnas de hierro" },
+    { f: "lanzamiento-02.jpg", w: 853,  h: 1280, m: "Lanzamiento interactivo", t: "Los arcos iluminados, con público" },
+    { f: "lanzamiento-03.jpg", w: 1280, h: 853,  m: "Lanzamiento interactivo", t: "Set de música en vivo entre pantallas" },
+
     { f: "carnaval-01.jpg", w: 853, h: 1280, m: "Carnaval Uruguayo", t: "El panel de sala en la galería de arcos, al atardecer" },
     { f: "carnaval-02.jpg", w: 1280, h: 853, m: "Carnaval Uruguayo", t: "La galería con los paneles del Museo del Carnaval, al caer la tarde" },
     { f: "carnaval-03.jpg", w: 1280, h: 853, m: "Carnaval Uruguayo", t: "Paneles de fotos del Museo del Carnaval bajo los arcos" },
@@ -84,15 +88,10 @@ window.Recorrido = (function () {
     { f: "obra-09.jpg", w: 1280, h: 853, m: "Gente en Obra", t: "El vernissage visto desde la galería alta" },
     { f: "obra-10.jpg", w: 1280, h: 853, m: "Gente en Obra", t: "Bloques textiles de cerca, con el público detrás" },
 
+    { f: "interfaz-04.jpg",    w: 1280, h: 828,  m: "Interfaz",                 t: "La sala blanca con las piezas sobre pedestales" },
+    { f: "interfaz-03.jpg",    w: 1280, h: 831,  m: "Interfaz",                 t: "Pieza roja sobre pedestal blanco" },
     { f: "interfaz-01.jpg",    w: 1280, h: 841,  m: "Interfaz",                 t: "Escultura de cables frente al cartel de Espacio Arte" },
     { f: "interfaz-02.jpg",    w: 1280, h: 861,  m: "Interfaz",                 t: "Maraña de cordones de color, de cerca" },
-    { f: "interfaz-03.jpg",    w: 1280, h: 831,  m: "Interfaz",                 t: "Pieza roja sobre pedestal blanco" },
-    { f: "interfaz-04.jpg",    w: 1280, h: 828,  m: "Interfaz",                 t: "La sala blanca con las piezas sobre pedestales" },
-
-    { f: "lanzamiento-01.jpg", w: 1280, h: 853,  m: "Lanzamiento interactivo", t: "Proyección de color sobre las columnas de hierro" },
-    { f: "lanzamiento-02.jpg", w: 853,  h: 1280, m: "Lanzamiento interactivo", t: "Los arcos iluminados, con público" },
-    { f: "lanzamiento-03.jpg", w: 1280, h: 853,  m: "Lanzamiento interactivo", t: "Set de música en vivo entre pantallas" },
-    { f: "lanzamiento-04.jpg", w: 853,  h: 1280, m: "Lanzamiento interactivo", t: "Intervención de danza en la galería" }
   ];
 
   var RUTA = "assets/img/sala/";

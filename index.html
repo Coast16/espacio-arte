@@ -11,7 +11,7 @@
      donde va a venir casi todo el tráfico. -->
 <meta property="og:title" content="Espacio Arte · Plaza de Toros Real de San Carlos">
 <meta property="og:description" content="Una sala de exposiciones adentro de un redondel de 1910.">
-<meta property="og:image" content="https://espacio-arte-web.vercel.app/assets/img/bianki-sala.jpg">
+<meta property="og:image" content="https://espacio-arte-web.vercel.app/assets/img/sala/carnaval-02.jpg">
 <meta property="og:image:width" content="1600">
 <meta property="og:image:height" content="1066">
 <meta property="og:url" content="https://espacio-arte-web.vercel.app/">
@@ -164,23 +164,13 @@
       <p class="declaracion" data-encender>La Plaza de Toros Real de San Carlos se inauguró el 9 de enero de 1910: cien metros de diámetro, veintidós de alto, diez mil espectadores. Alcanzó a hacer ocho corridas antes de que Uruguay prohibiera la actividad en 1912.</p>
     </div>
 
-    <figure class="lugar-foto">
-      <!-- botón de verdad, no un div con onclick: se abre con Enter, entra en
-           el orden de tabulación y un lector de pantalla dice qué hace -->
-      <button class="lugar-foto-abrir" type="button"
-              aria-label="Ver la foto de la sala en grande">
-        <span class="lugar-foto-marco">
-          <!-- la chica alcanza en celular: son 121 KB contra 435 -->
-          <img src="assets/img/bianki-sala.jpg"
-               srcset="assets/img/bianki-sala-sm.jpg 760w, assets/img/bianki-sala.jpg 1600w"
-               sizes="(min-width:900px) 44vw, 92vw"
-               alt="La sala de exposiciones dentro de la plaza: paños pintados colgando de la estructura de hierro, con público recorriéndola."
-               width="1600" height="1066" loading="lazy">
-        </span>
-        <span class="lugar-foto-lupa" aria-hidden="true">Ver en grande</span>
-      </button>
-      <figcaption>La sala montada bajo la estructura de hierro del redondel.</figcaption>
-    </figure>
+    <!-- El siglo cerrado, puesto a pasar: el año corre de 1912 a 2021 con el
+         scroll (main.js, contarAnios) y una línea se dibuja debajo. Son los
+         dos números que ya dice el texto; sin JS queda el 2021 quieto. -->
+    <p class="lugar-anios" aria-hidden="true">
+      <span class="lugar-anios-n" id="lugarAnios" data-desde="1912" data-hasta="2021">2021</span>
+      <i class="lugar-anios-linea"></i>
+    </p>
 
     <p class="declaracion" data-encender>Después cerró, y quedó así más de un siglo. Volvió a abrir restaurada en diciembre de 2021. Espacio Arte ocupa su interior.</p>
   </div>
@@ -339,7 +329,7 @@
       <p class="recorrido-nota" id="salaNota"></p>
     </div>
 
-    <p class="recorrido-cuenta" aria-hidden="true"><b id="salaN">01</b><i>/</i><span id="salaTot">51</span></p>
+    <p class="recorrido-cuenta" aria-hidden="true"><b id="salaN">01</b><i>/</i><span id="salaTot">50</span></p>
     <p class="recorrido-guia" aria-hidden="true">Mové el mouse para mirar alrededor · clic en una obra para verla</p>
   </div>
 
@@ -355,7 +345,7 @@
          abajo: en el teléfono el CSS la vuelve un riel horizontal con
          imantado. Este bloque es su cuenta y su barra de avance. -->
     <div class="sala-paso" aria-hidden="true">
-      <p class="sala-cuenta"><b id="salaPasoN">01</b><i>/</i><span id="salaPasoTot">51</span></p>
+      <p class="sala-cuenta"><b id="salaPasoN">01</b><i>/</i><span id="salaPasoTot">50</span></p>
       <p class="sala-guia">Deslizá para caminar la sala →</p>
       <p class="sala-riel"><i id="salaPasoRiel"></i></p>
     </div>
@@ -462,6 +452,24 @@
              srcset="assets/img/obra-figuras-sm.jpg 720w, assets/img/sala/../obra-figuras.jpg 1280w"
              sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Espacio Bianki — detalle de una pieza textil." loading="lazy" width="1600" height="1066">
         <figcaption><b>Espacio Bianki</b><span>Detalle de una pieza textil</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-01.jpg"
+             srcset="assets/img/sala/lanzamiento-01-sm.jpg 720w, assets/img/sala/lanzamiento-01.jpg 1280w"
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — proyección de color sobre las columnas de hierro." loading="lazy" width="1280" height="853">
+        <figcaption><b>Lanzamiento interactivo</b><span>Proyección de color sobre las columnas de hierro</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-02.jpg"
+             srcset="assets/img/sala/lanzamiento-02-sm.jpg 720w, assets/img/sala/lanzamiento-02.jpg 1280w"
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — los arcos iluminados, con público." loading="lazy" width="853" height="1280">
+        <figcaption><b>Lanzamiento interactivo</b><span>Los arcos iluminados, con público</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/lanzamiento-03.jpg"
+             srcset="assets/img/sala/lanzamiento-03-sm.jpg 720w, assets/img/sala/lanzamiento-03.jpg 1280w"
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — set de música en vivo entre pantallas." loading="lazy" width="1280" height="853">
+        <figcaption><b>Lanzamiento interactivo</b><span>Set de música en vivo entre pantallas</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/carnaval-01.jpg"
@@ -620,6 +628,18 @@
         <figcaption><b>Gente en Obra</b><span>Bloques textiles de cerca, con el público detrás</span></figcaption>
       </figure>
       <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-04.jpg"
+             srcset="assets/img/sala/interfaz-04-sm.jpg 720w, assets/img/sala/interfaz-04.jpg 1280w"
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — la sala blanca con las piezas sobre pedestales." loading="lazy" width="1280" height="828">
+        <figcaption><b>Interfaz</b><span>La sala blanca con las piezas sobre pedestales</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
+        <img src="assets/img/sala/interfaz-03.jpg"
+             srcset="assets/img/sala/interfaz-03-sm.jpg 720w, assets/img/sala/interfaz-03.jpg 1280w"
+             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — pieza roja sobre pedestal blanco." loading="lazy" width="1280" height="831">
+        <figcaption><b>Interfaz</b><span>Pieza roja sobre pedestal blanco</span></figcaption>
+      </figure>
+      <figure class="sala-obra" data-revelar-item>
         <img src="assets/img/sala/interfaz-01.jpg"
              srcset="assets/img/sala/interfaz-01-sm.jpg 720w, assets/img/sala/interfaz-01.jpg 1280w"
              sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — escultura de cables frente al cartel de espacio arte." loading="lazy" width="1280" height="841">
@@ -630,42 +650,6 @@
              srcset="assets/img/sala/interfaz-02-sm.jpg 720w, assets/img/sala/interfaz-02.jpg 1280w"
              sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — maraña de cordones de color, de cerca." loading="lazy" width="1280" height="861">
         <figcaption><b>Interfaz</b><span>Maraña de cordones de color, de cerca</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/interfaz-03.jpg"
-             srcset="assets/img/sala/interfaz-03-sm.jpg 720w, assets/img/sala/interfaz-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — pieza roja sobre pedestal blanco." loading="lazy" width="1280" height="831">
-        <figcaption><b>Interfaz</b><span>Pieza roja sobre pedestal blanco</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/interfaz-04.jpg"
-             srcset="assets/img/sala/interfaz-04-sm.jpg 720w, assets/img/sala/interfaz-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Interfaz — la sala blanca con las piezas sobre pedestales." loading="lazy" width="1280" height="828">
-        <figcaption><b>Interfaz</b><span>La sala blanca con las piezas sobre pedestales</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/lanzamiento-01.jpg"
-             srcset="assets/img/sala/lanzamiento-01-sm.jpg 720w, assets/img/sala/lanzamiento-01.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — proyección de color sobre las columnas de hierro." loading="lazy" width="1280" height="853">
-        <figcaption><b>Lanzamiento interactivo</b><span>Proyección de color sobre las columnas de hierro</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/lanzamiento-02.jpg"
-             srcset="assets/img/sala/lanzamiento-02-sm.jpg 720w, assets/img/sala/lanzamiento-02.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — los arcos iluminados, con público." loading="lazy" width="853" height="1280">
-        <figcaption><b>Lanzamiento interactivo</b><span>Los arcos iluminados, con público</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/lanzamiento-03.jpg"
-             srcset="assets/img/sala/lanzamiento-03-sm.jpg 720w, assets/img/sala/lanzamiento-03.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — set de música en vivo entre pantallas." loading="lazy" width="1280" height="853">
-        <figcaption><b>Lanzamiento interactivo</b><span>Set de música en vivo entre pantallas</span></figcaption>
-      </figure>
-      <figure class="sala-obra" data-revelar-item>
-        <img src="assets/img/sala/lanzamiento-04.jpg"
-             srcset="assets/img/sala/lanzamiento-04-sm.jpg 720w, assets/img/sala/lanzamiento-04.jpg 1280w"
-             sizes="(min-width:1040px) 31vw, (min-width:640px) 46vw, 92vw" alt="Lanzamiento interactivo — intervención de danza en la galería." loading="lazy" width="853" height="1280">
-        <figcaption><b>Lanzamiento interactivo</b><span>Intervención de danza en la galería</span></figcaption>
       </figure>
       <a class="sala-fin" href="#visitar">
         <b>Fin del recorrido</b>
@@ -703,11 +687,14 @@
   <p class="pie-marca" aria-hidden="true"><span class="ml"><span class="ln">Espacio Arte</span></span></p>
 </footer>
 
-<!-- La capa de escritorio: la luz que sigue al puntero y la gota de tinta
-     (el cursor, que además trae el grano de la hoja). Van fijas, no reciben
-     clics y en el celular no existen. -->
+<!-- La capa de escritorio: la luz que sigue al puntero, la hoja (grano,
+     sombra de los arcos, polvo que levanta la mano) y la mira, que es el
+     cursor. Van fijas, no reciben clics y en el celular no existen. -->
 <div class="luz" id="luz" aria-hidden="true"></div>
 <canvas class="tinta" id="tinta" aria-hidden="true"></canvas>
+<div class="mira" id="mira" aria-hidden="true">
+  <span class="mira-anillo"><i></i></span><span class="mira-punto"><i></i></span><span class="mira-rotulo"><i></i></span>
+</div>
 
 <div class="visor invertido" id="visor" hidden>
   <button class="visor-cerrar" id="visorCerrar" type="button" aria-label="Cerrar">Cerrar</button>
