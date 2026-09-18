@@ -255,6 +255,20 @@
   armarIndice();
   armarPasillo();
 
+  /* ── la gota de tinta: el cursor de escritorio (js/tinta.js) ──
+     No depende de GSAP, pero sí del puntero: en el teléfono no hay mano
+     que seguir y el lienzo ni se prende. Adentro de la sala se encoge,
+     por la misma razón por la que se apaga la luz.
+     La variable se declara ACÁ y no más abajo: un `var x = false` que
+     quede después de la llamada la vuelve a poner en false al pasar. */
+  var hayTinta = false;
+  function encenderTinta() {
+    var lienzoTinta = document.getElementById("tinta");
+    if (!lienzoTinta || menosMovimiento || !punteroFino || !window.Tinta) return;
+    hayTinta = window.Tinta.init(lienzoTinta);
+  }
+  encenderTinta();
+
   /* ═══════ sin GSAP no hay show, pero la página se lee igual ═══════ */
   if (!hayGsap) return;
 
@@ -645,7 +659,10 @@
     if (!luz || !sec || !haySala) return;
     ScrollTrigger.create({
       trigger: sec, start: "top 65%", end: "bottom 35%",
-      onToggle: function (self) { luz.classList.toggle("apagada", self.isActive); }
+      onToggle: function (self) {
+        luz.classList.toggle("apagada", self.isActive);
+        if (hayTinta) window.Tinta.encoger(self.isActive);
+      }
     });
   }
 

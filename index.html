@@ -565,7 +565,11 @@
   <p class="pie-marca" aria-hidden="true"><span class="ml"><span class="ln">Espacio Arte</span></span></p>
 </footer>
 
+<!-- La capa de escritorio: la luz que sigue al puntero y la gota de tinta
+     (el cursor, que además trae el grano de la hoja). Van fijas, no reciben
+     clics y en el celular no existen. -->
 <div class="luz" id="luz" aria-hidden="true"></div>
+<canvas class="tinta" id="tinta" aria-hidden="true"></canvas>
 
 <div class="visor invertido" id="visor" hidden>
   <button class="visor-cerrar" id="visorCerrar" type="button" aria-label="Cerrar">Cerrar</button>
@@ -589,7 +593,8 @@
   var BASE = [
     "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js",
     "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js",
-    "https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"
+    "https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js",
+    "js/tinta.js"
   ];
   var TRESD = [
     "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js",

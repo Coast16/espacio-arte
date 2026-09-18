@@ -177,7 +177,8 @@ se note.
   una emisión ambiente lenta para que el polvo exista sin puntero (dedo,
   teclado o quieto). En celular no se crea: sería `rAF` continuo por batería.
 - **La luz de sala.** Un `radial-gradient` en `#luz` que sigue al puntero.
-  Solo con `(hover:hover) and (pointer:fine)`.
+  Solo con `(hover:hover) and (pointer:fine)`. Desde la tercera pasada va en
+  blanco y por `difference` (ver "La capa de escritorio" más abajo).
 - **El encendido palabra por palabra** (`encender()` en `main.js`) es el mismo
   mecanismo en `.manifiesto` y en las declaraciones de `.lugar`: cada palabra se
   envuelve en un `.pl` que arranca en opacidad baja y sube con el scroll. Se
@@ -432,13 +433,56 @@ piezas se materializan desde el negro a medida que te acercás.
   **Clic**: se abre el visor (`#visor`), que es DOM común — cierra con Esc, con
   el botón o con clic afuera, devuelve el foco y frena Lenis mientras está
   abierto.
-- **La linterna (`.luz`) se apaga adentro del recorrido**: estás dentro de la
-  escena, no mirándola de afuera. Sobre cal ya no es una luz sino una sombra
-  suave (`mix-blend-mode: multiply`): una linterna sobre blanco no se ve.
+- **La linterna (`.luz`) se apaga adentro del recorrido**, y la gota de tinta
+  se encoge a un tercio: estás dentro de la escena, no mirándola de afuera, y
+  una gota de 70 px tapaba las obras chicas del fondo del pasillo.
 
 El scrub va contra un objeto intermedio (`paso`), no contra un ScrollTrigger
 pelado: un trigger sin animación **no interpola su propio `progress`**, así que
 la cámara saltaría.
+
+### La capa de escritorio: la gota de tinta, la luz y el grano
+
+Tres cosas que existen solo con puntero fino y sin "reducir movimiento", y
+que en el celular ni se crean (`.luz,.tinta{display:none}` en el bloque de
+celular; `encenderTinta()` mira `punteroFino`). La referencia fue el cursor y
+el fondo de chelabs.dev, pasados a cal y tinta.
+
+- **La gota de tinta (`js/tinta.js`, `#tinta`).** Un lienzo WebGL fijo a
+  pantalla completa, `pointer-events:none`, z-index 95 (debajo de la barra en
+  100 y del visor en 250: la gota no se mete en la obra que estás mirando en
+  grande). Tres círculos que se funden —metaballs: cada uno suma `r²/d²` y
+  donde la suma pasa 0,82–1,06 hay tinta— siguen al puntero con factores
+  0,32 / 0,17 / 0,11 por cuadro a 60 fps, así la cola se estira cuando la mano
+  corre. Crecen con la velocidad, respiran si la mano se queda quieta más de
+  1,2 s, y arriba de 18 px/cuadro la cola suelta gotitas con gravedad que se
+  achican y mueren en 1,3 s (máximo 10 vivas, 16 formas en el shader). Los
+  números que mandan están arriba del archivo con nombre.
+- **Se pinta siempre en blanco y la hoja la mezcla por `difference`.** Sobre
+  cal (#F4F2ED) queda tinta casi negra, sobre tinta (#0A0B0D) queda cal, y
+  sobre una foto la da vuelta como un negativo. Un solo color para los dos
+  fondos, sin preguntarle al DOM qué hay debajo. Chelabs hace lo mismo con su
+  naranja: naranja sobre naranja da negro.
+- **El grano va en el mismo lienzo.** Un `hash` por px del lienzo, amplitud
+  `GRANO` = 0,045, semilla nueva en cada cuadro. Como todo se mezcla por
+  diferencia, un poco de blanco al azar oscurece apenas la cal y aclara apenas
+  la tinta: el mismo grano se ve en los dos fondos y no hace falta otra capa
+  con `mix-blend-mode` encima de la página (cada capa así es un pase de mezcla
+  a pantalla completa por cuadro). Quieto parecía una pantalla sucia porque la
+  página scrollea debajo; en movimiento es grano de película.
+- **La luz (`.luz`) pasó de `multiply` a `difference` en blanco.** Con
+  multiply, en los bloques oscuros no se veía nada. En blanco por diferencia
+  es una sombra tenue sobre cal y un halo claro sobre tinta, con el mismo
+  degradado (960 px, 9 % en el centro).
+- **Rendimiento medido**: con el puntero en movimiento sintético continuo y la
+  portada 3D corriendo, mediana 16,7 ms por cuadro y p95 17,6 ms a 1180×814.
+  El lienzo va a `min(1.5, devicePixelRatio)`; el cursor del sistema queda (no
+  se pone `cursor:none`): la gota lo acompaña, no lo reemplaza.
+- **Trampa que costó una vuelta**: `var hayTinta = false` estaba declarado
+  DESPUÉS de la llamada a `encenderTinta()`. La declaración se iza, la
+  asignación no: la función ponía `true` y al pasar por la línea volvía a
+  `false`, así que la gota nunca se encogía en la sala. Las banderas se declaran
+  antes de la primera llamada que las toca.
 
 ### El respaldo del recorrido no es opcional
 
@@ -580,6 +624,13 @@ Las capturas de pantalla sí funcionan (fuerzan un cuadro) y las medidas del DOM
 también. O sea: para composición y medidas el navegador de prueba sirve; para
 cualquier cosa atada al tiempo, no. En esa ronda esto hizo parecer rotas tres
 cosas que andaban bien.
+
+El panel del navegador vuelve a correr a 60 cuadros si se lo trae al frente
+(`tabs_select` sobre la pestaña) — después de eso `rAF` anda de verdad y se
+puede medir tiempo por cuadro. Sin traerlo al frente dice `visible` pero corre
+a 2 cuadros por segundo, que es peor que `hidden`: parece que anda y no anda.
+Chrome de verdad en segundo plano dice `hidden` y una promesa que espera un
+`rAF` no vuelve nunca (la evaluación vence a los 45 s).
 
 ## Celular
 
