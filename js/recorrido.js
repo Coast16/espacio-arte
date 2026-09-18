@@ -9,7 +9,7 @@
    Las piezas aparecen desde el negro (niebla) a medida que te
    acercás, igual que entrando a una sala oscura.
 
-   Expone window.Recorrido = { init, progreso, destruir, alClic, alCambiar }
+   Expone window.Recorrido = { init, progreso, destruir, alClic, alCambiar, alSobre }
    ═══════════════════════════════════════════════════════════ */
 window.Recorrido = (function () {
   "use strict";
@@ -113,7 +113,7 @@ window.Recorrido = (function () {
   var visible = false, pedido = null, ultimo = 0;
   var estado = { s: 0, ratonX: 0, ratonY: 0, objX: 0, objY: 0, sobre: -1, actual: -1 };
   var descartables = [];
-  var api = { alClic: null, alCambiar: null };
+  var api = { alClic: null, alCambiar: null, alSobre: null };
 
   function haySoporte() {
     if (!window.THREE) return false;
@@ -335,6 +335,8 @@ window.Recorrido = (function () {
     if (nuevo !== estado.sobre) {
       estado.sobre = nuevo;
       lienzo.style.cursor = nuevo === -1 ? "" : "pointer";
+      // la gota de tinta (main.js) escucha esto: sobre una obra se junta
+      if (api.alSobre) api.alSobre(nuevo !== -1);
     }
   }
 
@@ -465,6 +467,7 @@ window.Recorrido = (function () {
     init: init, progreso: progreso, paso: paso, destruir: destruir,
     obras: OBRAS, ruta: RUTA,
     set alClic(f) { api.alClic = f; },
+    set alSobre(f) { api.alSobre = f; },
     /* init() ya pintó un cuadro antes de que el cartel existiera y dejó
        anotada la obra 0 como "la actual": sin este reset el cartel arranca
        vacío y no dice nada hasta que llegás a la segunda obra */

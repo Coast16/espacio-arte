@@ -274,19 +274,37 @@
   /* ═══════ sin GSAP no hay show, pero la página se lee igual ═══════ */
   if (!hayGsap) return;
 
-  /* ── revelado de texto por línea ── */
+  /* ── revelado de texto por línea ──
+     En escritorio los títulos de sección van ATADOS al scroll: cada palabra
+     sube dentro de la máscara de su línea a medida que bajás, y si volvés
+     para arriba vuelve a esconderse. La portada queda como estaba (entra
+     una vez, con el umbral: todavía no hay scroll) y el celular también. */
   function revelarTitulos() {
     gsap.utils.toArray("[data-lineas]").forEach(function (bloque) {
       var lineas = bloque.querySelectorAll(".ln");
       if (!lineas.length) return;
       if (menosMovimiento) { gsap.set(lineas, { yPercent: 0, autoAlpha: 1 }); return; }
-      gsap.from(lineas, {
-        yPercent: 108,
-        duration: 1.05,
-        ease: "power4.out",
-        stagger: 0.11,
-        scrollTrigger: { trigger: bloque, start: "top 86%", once: true }
-      });
+
+      var atado = !mmChico.matches && !bloque.closest(".portada");
+      if (!atado) {
+        gsap.from(lineas, {
+          yPercent: 108, duration: 1.05, ease: "power4.out", stagger: 0.11,
+          scrollTrigger: { trigger: bloque, start: "top 86%", once: true }
+        });
+        return;
+      }
+      var palabras = [];
+      lineas.forEach(function (ln) { palabras = palabras.concat(envolverPalabras(ln, "lt")); });
+      if (!palabras.length) return;
+      /* La rotación arranca desde la esquina de abajo a la izquierda: la
+         palabra "cae" en su lugar en vez de subir como un ascensor. */
+      gsap.fromTo(palabras,
+        { yPercent: 112, rotate: 4 },
+        {
+          yPercent: 0, rotate: 0, ease: "none",
+          stagger: { amount: 0.45 },
+          scrollTrigger: { trigger: bloque, start: "top 92%", end: "top 46%", scrub: 0.55 }
+        });
     });
   }
 
@@ -322,11 +340,16 @@
       if (menosMovimiento || !isFinite(hasta)) return;
 
       var caja = { v: 0 };
+      /* En escritorio el número va con la mano: subís y cuenta, volvés y
+         descuenta. En celular queda la cuenta de una vez. */
+      var atada = !mmChico.matches;
       gsap.to(caja, {
         v: hasta,
         duration: 1.5,
-        ease: "power2.out",
-        scrollTrigger: { trigger: el, start: "top 92%", once: true },
+        ease: atada ? "none" : "power2.out",
+        scrollTrigger: atada
+          ? { trigger: el, start: "top 94%", end: "top 56%", scrub: 0.5 }
+          : { trigger: el, start: "top 92%", once: true },
         onUpdate: function () {
           var n = Math.round(caja.v);
           el.textContent = plano ? String(n) : n.toLocaleString("es-UY");
@@ -338,8 +361,9 @@
   /* ── el manifiesto se enciende palabra por palabra con el scroll ──
      Envolver por nodo de texto (no innerHTML) para no romper la cursiva
      ni los enlaces que aparezcan adentro. */
-  function envolverPalabras(raiz) {
+  function envolverPalabras(raiz, clase) {
     var textos = [], salida = [];
+    clase = clase || "pl";
     (function recorrer(n) {
       for (var c = n.firstChild; c; c = c.nextSibling) {
         if (c.nodeType === 3) textos.push(c);
@@ -353,7 +377,7 @@
         if (!parte) return;
         if (/^\s+$/.test(parte)) { frag.appendChild(document.createTextNode(parte)); return; }
         var s = document.createElement("span");
-        s.className = "pl";
+        s.className = clase;
         s.textContent = parte;
         frag.appendChild(s);
         salida.push(s);
@@ -388,7 +412,8 @@
     });
   }
 
-  /* ── la regla de cada rótulo se dibuja de izquierda a derecha ── */
+  /* ── la regla de cada rótulo se dibuja de izquierda a derecha,
+        y el rótulo se escribe detrás de ella (escritorio) ── */
   function dibujarReglas() {
     gsap.utils.toArray("[data-regla]").forEach(function (r) {
       if (menosMovimiento) { gsap.set(r, { scaleX: 1 }); return; }
@@ -396,6 +421,14 @@
         scaleX: 1, ease: "none",
         scrollTrigger: { trigger: r, start: "top 97%", end: "top 64%", scrub: 0.5 }
       });
+      var rotulo = r.parentNode && r.parentNode.querySelector(".eyebrow");
+      if (!rotulo || mmChico.matches) return;
+      gsap.fromTo(rotulo,
+        { clipPath: "inset(0 100% 0 0)" },
+        {
+          clipPath: "inset(0 0% 0 0)", ease: "none",
+          scrollTrigger: { trigger: r, start: "top 94%", end: "top 60%", scrub: 0.5 }
+        });
     });
   }
 
@@ -440,8 +473,9 @@
   /* ── la cinta de nombres: corre sola ──
      Solo se mueve mientras está en pantalla: es lo único que quedó
      escribiendo en cada cuadro y no tiene sentido que corra invisible. */
-  var cintaEstado = { pos: 0, ancho: 0, riel: null, viva: false };
+  var cintaEstado = { pos: 0, ancho: 0, riel: null, viva: false, empuje: 0, medidor: null };
   var BASE_CINTA = 30; // px por segundo
+  var EMPUJE_CINTA = 24;  // px/s de cinta por cada px/cuadro de scroll
 
   function armarCinta() {
     var riel = document.getElementById("cintaRiel");
@@ -458,6 +492,9 @@
 
     cintaEstado.riel = riel;
     cintaEstado.ancho = ancho;
+    // getVelocity() es de cada trigger, no de la clase: se crea uno que
+    // abarca toda la página solo para preguntarle a qué velocidad va el scroll
+    cintaEstado.medidor = ScrollTrigger.create({ start: 0, end: "max" });
 
     if (window.IntersectionObserver) {
       new IntersectionObserver(function (e) {
@@ -471,9 +508,18 @@
   function tickerContinuo(tiempo, delta) {
     if (!cintaEstado.viva || !cintaEstado.ancho) return;
     var dt = Math.min(delta, 50) / 1000;
-    cintaEstado.pos -= BASE_CINTA * dt;
-    if (cintaEstado.pos <= -cintaEstado.ancho) cintaEstado.pos += cintaEstado.ancho;
-    cintaEstado.riel.style.transform = "translate3d(" + cintaEstado.pos.toFixed(2) + "px,0,0)";
+    /* La cinta acusa recibo del scroll: cuanto más rápido bajás, más
+       rápido corre (y se inclina un poco, como si el aire la empujara).
+       El empuje se suaviza para que el frenazo no la clave en seco. */
+    // px por cuadro (a 60): ScrollTrigger la mide venga de la rueda, del
+    // dedo o de un scrollTo; la de Lenis solo cuenta la rueda
+    var vel = cintaEstado.medidor ? cintaEstado.medidor.getVelocity() / 60 : 0;
+    cintaEstado.empuje += (vel - cintaEstado.empuje) * Math.min(1, dt * 9);
+    var empuje = mmChico.matches ? 0 : cintaEstado.empuje;
+    cintaEstado.pos -= (BASE_CINTA + Math.abs(empuje) * EMPUJE_CINTA) * dt;
+    while (cintaEstado.pos <= -cintaEstado.ancho) cintaEstado.pos += cintaEstado.ancho;
+    var inclina = clamp(-6, 6, -empuje * 0.18);
+    cintaEstado.riel.style.transform = "translate3d(" + cintaEstado.pos.toFixed(2) + "px,0,0) skewX(" + inclina.toFixed(2) + "deg)";
   }
 
   /* ── la luz de sala: sigue al puntero, tenue ── */
@@ -534,6 +580,7 @@
     window.Recorrido.alClic = function (d, ruta) {
       abrirVisor(ruta + d.f, d.m, d.t);
     };
+    window.Recorrido.alSobre = function (si) { if (hayTinta) window.Tinta.sobre(si); };
   }
 
   function armarVisor() {
@@ -629,6 +676,20 @@
       abrirVisor(img.currentSrc || img.src, "La sala",
         pie ? pie.textContent.trim() : "", img.alt);
     });
+
+    if (!menosMovimiento && !mmChico.matches) {
+      /* Se destapa de arriba hacia abajo mientras entra, y después sigue
+         subiendo un poco más lento que la página: la foto tiene otra
+         profundidad que el texto que la rodea. */
+      gsap.fromTo(marco,
+        { clipPath: "inset(22% 0 0 0)" },
+        { clipPath: "inset(0% 0 0 0)", ease: "none",
+          scrollTrigger: { trigger: marco, start: "top 96%", end: "top 48%", scrub: 0.5 } });
+      gsap.fromTo(boton.parentNode,
+        { y: 36 },
+        { y: -36, ease: "none",
+          scrollTrigger: { trigger: boton.parentNode, start: "top bottom", end: "bottom top", scrub: true } });
+    }
 
     if (menosMovimiento || !punteroFino) return;
     marco.addEventListener("pointermove", function (e) {
@@ -1013,6 +1074,102 @@
     };
   });
 
+  /* ── la firma del pie ──
+     En escritorio, letra por letra y atada al scroll: termina de escribirse
+     justo cuando la página llega al final. En celular sube de una vez. */
+  function firmarPie() {
+    var ln = document.querySelector(".pie-marca .ln");
+    if (!ln || menosMovimiento) return;
+    if (mmChico.matches) {
+      gsap.from(ln, {
+        yPercent: 105, duration: 1.25, ease: "expo.out",
+        scrollTrigger: { trigger: ".pie", start: "top 94%", once: true }
+      });
+      return;
+    }
+    var letras = [];
+    var texto = ln.textContent;
+    ln.textContent = "";
+    texto.split("").forEach(function (ch) {
+      if (ch === " ") { ln.appendChild(document.createTextNode(" ")); return; }
+      var e = document.createElement("span");
+      e.className = "lt";
+      e.textContent = ch;
+      ln.appendChild(e);
+      letras.push(e);
+    });
+    gsap.fromTo(letras,
+      { yPercent: 110 },
+      {
+        yPercent: 0, ease: "none", stagger: { amount: 0.7 },
+        scrollTrigger: { trigger: ".pie", start: "top 96%", end: "bottom bottom", scrub: 0.6 }
+      });
+  }
+
+  /* ── la gota acusa recibo ──
+     Sobre cualquier cosa que se pueda tocar, la tinta se junta; al apretar
+     se achica. Se escucha en el documento entero, no enlace por enlace. */
+  function enlazarCursor() {
+    if (!hayTinta) return;
+    var TOCABLE = "a, button, [role=button], summary";
+    var sobre = null;
+    document.addEventListener("pointerover", function (e) {
+      var t = e.target.closest ? e.target.closest(TOCABLE) : null;
+      if (t === sobre) return;
+      sobre = t;
+      window.Tinta.sobre(!!t);
+    }, { passive: true });
+    document.addEventListener("pointerdown", function () { window.Tinta.apretar(true); }, { passive: true });
+    window.addEventListener("pointerup", function () { window.Tinta.apretar(false); }, { passive: true });
+    window.addEventListener("pointercancel", function () { window.Tinta.apretar(false); }, { passive: true });
+  }
+
+  /* ── enlaces imantados ──
+     Los enlaces de la barra y los datos se corren unos px hacia la mano
+     cuando pasa cerca, y vuelven con un rebote corto al irse. Solo con
+     puntero fino: en el dedo no hay "cerca". */
+  function imantar() {
+    if (menosMovimiento || !punteroFino) return;
+    var IMAN = 7; // px de recorrido máximo
+    gsap.utils.toArray(".barra-nav a, .barra .indice, .dato a, .visor-cerrar").forEach(function (el) {
+      el.addEventListener("pointermove", function (e) {
+        var r = el.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+        var dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+        gsap.to(el, { x: clamp(-1, 1, dx) * IMAN, y: clamp(-1, 1, dy) * IMAN * 0.6,
+                      duration: 0.35, ease: "power3.out", overwrite: "auto" });
+      }, { passive: true });
+      el.addEventListener("pointerleave", function () {
+        gsap.to(el, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.45)", overwrite: "auto" });
+      }, { passive: true });
+    });
+  }
+
+  /* ── la portada tiene fondo y frente ──
+     El título se corre apenas contra la mano, al revés del volumen: dos
+     planos a distinta distancia. Nada de esto toca .portada-texto, que ya
+     lo maneja el scrub de salida; se mueven sus hijos. */
+  function profundidadPortada() {
+    if (menosMovimiento || !punteroFino || mmChico.matches) return;
+    var capas = gsap.utils.toArray(".portada-texto > *");
+    if (!capas.length) return;
+    var HONDO = [4, 9, 6]; // px por capa: rótulo, título, bajada
+    var meta = { x: 0, y: 0 }, act = { x: 0, y: 0 };
+    window.addEventListener("pointermove", function (e) {
+      meta.x = (e.clientX / window.innerWidth - 0.5) * -2;
+      meta.y = (e.clientY / window.innerHeight - 0.5) * -2;
+    }, { passive: true });
+    gsap.ticker.add(function () {
+      if (window.scrollY > window.innerHeight) return; // la portada ya se fue
+      act.x += (meta.x - act.x) * 0.06;
+      act.y += (meta.y - act.y) * 0.06;
+      for (var i = 0; i < capas.length; i++) {
+        var h = HONDO[i] || 5;
+        capas[i].style.transform = "translate3d(" + (act.x * h).toFixed(2) + "px," + (act.y * h).toFixed(2) + "px,0)";
+      }
+    });
+  }
+
   /* ═══════ revelados, índice y cinta ═══════
      Ya no queda ningún pin de GSAP en la página: la portada y el
      recorrido se sostienen con position:sticky del CSS, así que estos
@@ -1032,12 +1189,12 @@
   gsap.ticker.add(tickerContinuo);
 
   // la marca grande del pie sube desde el borde
-  if (!menosMovimiento) {
-    gsap.from(".pie-marca .ln", {
-      yPercent: 105, duration: 1.25, ease: "expo.out",
-      scrollTrigger: { trigger: ".pie", start: "top 94%", once: true }
-    });
-  }
+  firmarPie();
+
+  // el cursor acusa recibo de lo que se puede tocar, y los enlaces lo imantan
+  enlazarCursor();
+  imantar();
+  profundidadPortada();
 
   /* Las escenas 3D se prenden al cargar Y al agrandar la ventana.
      Van por `resize` y no solo por el evento del media query, porque ese no

@@ -21,6 +21,10 @@
   var ENCOGIDA = 0.3;      // escala adentro de la sala: una gota chica que no tapa obras
   var MAX_GOTAS = 10;      // gotitas sueltas a la vez (16 formas en total en el shader)
   var GRANO = 0.045;       // grano de la hoja: 0 lo apaga; arriba de .08 se ve sucio
+  var LUZ = 0.05;          // la sombra de los arcos que recorre la cal: 0 la apaga
+  var VINETA = 0.045;      // los bordes de la hoja, apenas más oscuros que el centro
+  var SOBRE = 0.5;         // cuánto crece la gota sobre un enlace (+50 %)
+  var APRETADA = 0.72;     // a cuánto baja al hacer clic
   var DPR_MAX = 1.5;       // más que esto no se nota y cuesta el doble
 
   var VERT = [
@@ -43,6 +47,19 @@
     "uniform float uGrano;",
     "uniform float uCelda;",   // tamaño del grano en px del lienzo
     "uniform float uSemilla;",
+    "uniform vec2 uRes;",
+    "uniform float uT;",       // segundos
+    "uniform float uScroll;",  // scrollY en px del lienzo
+    "uniform float uLuz;",
+    "uniform float uVineta;",
+    /* Una banda diagonal suave, de período `per`, corrida por `fase`.
+       Dos de estas cruzadas, muy anchas y muy lentas, son la sombra que
+       la estructura de arcos deja sobre la pared encalada cuando el sol
+       se mueve. Con el scroll también se corren: la pared pasa. */
+    "float haz(vec2 p, float ang, float per, float fase){",
+    "  float u = dot(p, vec2(cos(ang), sin(ang))) / per;",
+    "  return 0.5 + 0.5 * sin(6.2831 * (u + fase));",
+    "}",
     "float azar(vec2 p){",
     "  p = fract(p * vec2(123.34, 456.21));",
     "  p += dot(p, p + 45.32);",
@@ -59,7 +76,14 @@
     "  }",
     "  float gota = smoothstep(0.82, 1.06, f);",
     "  float grano = azar(floor(p / uCelda) + uSemilla) * uGrano;",
-    "  float a = min(1.0, gota + grano);",
+    "  float d = uRes.y;",                                   // todo en proporción al alto
+    "  vec2 q = vec2(p.x, p.y + uScroll * 0.35);",           // la pared pasa a un tercio del scroll
+    "  float luz = haz(q, -0.52, d * 1.15, uT * 0.006)  * 0.55",
+    "            + haz(q, -0.31, d * 1.9,  -uT * 0.0037) * 0.45;",
+    "  luz = smoothstep(0.42, 1.0, luz) * uLuz;",
+    "  vec2 c = p / uRes - 0.5;",
+    "  float vineta = smoothstep(0.30, 1.05, length(c * vec2(uRes.x / uRes.y, 1.0)) * 1.25) * uVineta;",
+    "  float a = min(1.0, gota + grano + luz + vineta);",
     "  gl_FragColor = vec4(a, a, a, a);", // premultiplicado: blanco con alfa
     "}"
   ].join("\n");
@@ -106,7 +130,14 @@
     var uGrano = gl.getUniformLocation(prog, "uGrano");
     var uCelda = gl.getUniformLocation(prog, "uCelda");
     var uSemilla = gl.getUniformLocation(prog, "uSemilla");
+    var uRes = gl.getUniformLocation(prog, "uRes");
+    var uT = gl.getUniformLocation(prog, "uT");
+    var uScroll = gl.getUniformLocation(prog, "uScroll");
+    var uLuz = gl.getUniformLocation(prog, "uLuz");
+    var uVineta = gl.getUniformLocation(prog, "uVineta");
     gl.uniform1f(uGrano, GRANO);
+    gl.uniform1f(uLuz, LUZ);
+    gl.uniform1f(uVineta, VINETA);
 
     var dpr = 1, anchoCss = 0, altoCss = 0;
     function medir() {
@@ -120,6 +151,7 @@
       }
       gl.viewport(0, 0, w, h);
       gl.uniform1f(uCelda, Math.max(1, dpr)); // un grano ≈ un px de pantalla
+      gl.uniform2f(uRes, w, h);
     }
 
     /* estado: a dónde apunta la mano y dónde están las tres gotas */
@@ -129,7 +161,9 @@
       cabeza: { x: lejos, y: lejos }, medio: { x: lejos, y: lejos }, cola: { x: lejos, y: lejos },
       previa: { x: lejos, y: lejos },
       ultimoMov: 0, adentro: false, gotas: [], t: 0,
-      escala: 1, escalaMeta: 1
+      escala: 1, escalaMeta: 1,
+      sobre: 0, sobreMeta: 0,        // 1 = encima de algo que se puede tocar
+      apretada: 1, apretadaMeta: 1   // < 1 mientras el botón está abajo
     };
     var pos = new Float32Array(32);
     var rad = new Float32Array(16);
@@ -160,23 +194,28 @@
       var c = est.cabeza, m = est.medio, k = est.cola;
       c.x += (est.tx - c.x) * SIGUE_CABEZA * p;
       c.y += (est.ty - c.y) * SIGUE_CABEZA * p;
-      m.x += (c.x - m.x) * SIGUE_MEDIO * p;
-      m.y += (c.y - m.y) * SIGUE_MEDIO * p;
-      k.x += (m.x - k.x) * SIGUE_COLA * p;
-      k.y += (m.y - k.y) * SIGUE_COLA * p;
+      var pega = 1 + 1.6 * est.sobre; // sobre un enlace, la cola alcanza a la cabeza
+      m.x += (c.x - m.x) * Math.min(1, SIGUE_MEDIO * pega) * p;
+      m.y += (c.y - m.y) * Math.min(1, SIGUE_MEDIO * pega) * p;
+      k.x += (m.x - k.x) * Math.min(1, SIGUE_COLA * pega) * p;
+      k.y += (m.y - k.y) * Math.min(1, SIGUE_COLA * pega) * p;
 
       var vel = Math.hypot(c.x - est.previa.x, c.y - est.previa.y) / p;
       est.previa.x = c.x; est.previa.y = c.y;
 
       est.escala += (est.escalaMeta - est.escala) * 0.08 * p;
-      var esc = est.escala;
+      est.sobre += (est.sobreMeta - est.sobre) * 0.16 * p;
+      est.apretada += (est.apretadaMeta - est.apretada) * 0.3 * p;
+      var esc = est.escala * est.apretada;
       var quieta = ahora - est.ultimoMov > 1200 ? 3 * Math.sin(2.2 * est.t) : 0; // respira si la mano se queda
-      var rc = (CABEZA + Math.min(VEL_CABEZA, 0.35 * vel) + quieta) * esc;
+      /* sobre un enlace la tinta se junta: la cabeza crece y la cola se
+         mete adentro (en vez de arrastrarse) — una gota lista para caer */
+      var rc = (CABEZA + Math.min(VEL_CABEZA, 0.35 * vel) + quieta) * esc * (1 + SOBRE * est.sobre);
       var rm = (MEDIO + Math.min(VEL_MEDIO, 0.25 * vel)) * esc;
-      var rk = (COLA + Math.min(VEL_COLA, 0.2 * vel)) * esc;
+      var rk = (COLA + Math.min(VEL_COLA, 0.2 * vel)) * esc * (1 - 0.5 * est.sobre);
 
-      // gotitas: solo cuando va rápido, a veces, y no encogida
-      if (est.adentro && esc > 0.6 && vel > 18 && Math.random() < 0.28 && est.gotas.length < MAX_GOTAS) {
+      // gotitas: solo cuando va rápido, a veces, y ni encogida ni sobre algo
+      if (est.adentro && esc > 0.6 && est.sobre < 0.3 && vel > 18 && Math.random() < 0.28 && est.gotas.length < MAX_GOTAS) {
         var dx = k.x - c.x, dy = k.y - c.y, len = Math.hypot(dx, dy) || 1;
         est.gotas.push({
           x: k.x + dx / len * 6, y: k.y + dy / len * 6,
@@ -213,6 +252,8 @@
       gl.uniform1fv(uRad, rad);
       gl.uniform1i(uCount, n);
       gl.uniform1f(uSemilla, (ahora % 1000) / 1000 * 97.0);
+      gl.uniform1f(uT, est.t);
+      gl.uniform1f(uScroll, (window.scrollY || 0) * dpr);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
@@ -240,8 +281,10 @@
     arrancar();
     lienzo.classList.add("lista");
     window.Tinta.encoger = function (si) { est.escalaMeta = si ? ENCOGIDA : 1; };
+    window.Tinta.sobre = function (si) { est.sobreMeta = si ? 1 : 0; };
+    window.Tinta.apretar = function (si) { est.apretadaMeta = si ? APRETADA : 1; };
     return true;
   }
 
-  window.Tinta = { init: init, encoger: function () {} };
+  window.Tinta = { init: init, encoger: function () {}, sobre: function () {}, apretar: function () {} };
 })();
